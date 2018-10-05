@@ -1,0 +1,86 @@
+{% extends "store/base.html" %}
+{% block page_name %} Edit Alert {% endblock %}
+
+{% block styles %}
+{{super()}}
+
+<style>
+    .form-alert{
+    margin-top:4.25em;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <form method="post" class="form-alert" action="">
+        <h1 class="h3 mb-3 font-weight-normal">Edit Alert</h1>
+        <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+        <!--If the template doesn't use a FlaskForm or WTForm, render a hidden input with the token in the form.-->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>What to alert</h2>
+
+
+                <div class="form-group">
+                    <label for="inputProductUrl">Product Url</label>
+                    <input type="url" disabled id="inputProductUrl" class="form-control" placeholder="Product Url"
+                           name="url" value="{{ alert.item.url }}" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="inputPriceLimit">Price limit</label>
+                    <input type="number" id="inputPriceLimit" class="form-control" placeholder="Price limit"
+                           value="{{ alert.price_limit }}" name="price_limit" required>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+                <h2>Alert settings</h2>
+                <div class="form-group">
+                    <label for="inputCheckingFreq">Check every (minutes):</label>
+                    <input type="number" id="inputCheckingFreq" class="form-control " value="{{ alert.check_every }}"
+                           placeholder="10 minutes" name="check_frequency">
+                </div>
+                <div class="form-group">
+                    <label for="inputAlertEmail">Contact Email:</label>
+                    <input type="email" id="inputAlertEmail" class="form-control" value="{{ alert.contact_email }}"
+                           placeholder="admin@example.com" name="alert_email">
+                </div>
+                <div class="form-group">
+                    <label for="inputAlertPhone">Contact Phone:</label>
+                    <input type="text" id="inputAlertPhone" class="form-control" value="{{ alert.contact_phone }}"
+                           placeholder="(210)-202-2332" name="alert_phone">
+                </div>
+                <div class="form-group form-check">
+                    <input class="form-check-input" type="checkbox" {% if alert.active %} checked="True" {% endif %} id="defaultCheck1" name="active">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Active
+                    </label>
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-2">
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Save Alert</button>
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-lg btn-danger btn-block" href="#">Delete Alert</a>
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-link" href="{{ url_for ('users.user_alerts')}}">Cancel</a>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

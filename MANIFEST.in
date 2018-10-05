@@ -1,0 +1,3 @@
+graft pricealerts/static
+graft pricealerts/templates
+global-exclude *.pyc

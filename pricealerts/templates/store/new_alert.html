@@ -1,0 +1,225 @@
+{% extends "store/base.html" %}
+
+{% block page_name %} New Alert {% endblock %}
+{% block styles %}
+{{super()}}
+
+<style>
+    .qty .count {
+    color: #000;
+    display: inline-block;
+    vertical-align: top;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 30px;
+    padding: 0 2px
+    ;min-width: 35px;
+    text-align: center;
+}
+.qty .plus {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+    color: white;
+    width: 30px;
+    height: 30px;
+    font: 30px/1 Arial,sans-serif;
+    text-align: center;
+    border-radius: 50%;
+    }
+.qty .minus {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+    color: white;
+    width: 30px;
+    height: 30px;
+    font: 30px/1 Arial,sans-serif;
+    text-align: center;
+    border-radius: 50%;
+    background-clip: padding-box;
+}
+div {
+    text-align: center;
+}
+.minus:hover{
+    background-color: #717fe0 !important;
+}
+.plus:hover{
+    background-color: #717fe0 !important;
+}
+/*Prevent text selection*/
+span{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+input{
+    border: 0;
+    width: 2%;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input:disabled{
+    background-color:white;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <form method="post" class="form-alert needs-validation" novalidate action="">
+        <!--If the template doesn't use a FlaskForm or WTForm, render a hidden input with the token in the form.-->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <h1 class="h3 mb-3 font-weight-normal">New Alert</h1>
+        <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <h2>What to alert</h2>
+
+                <div class="form-group">
+                    <label for="inputProductUrl">Product Url:</label>
+                    <input type="url" id="inputProductUrl" class="form-control" placeholder="Product Url" name="url"
+                           required autofocus>
+
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Please introduce a valid URL.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPriceLimit">Price under:</label>
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">$ or &euro;</div>
+                        </div>
+                        <input type="number" id="inputPriceLimit" class="form-control" placeholder="Price limit"
+                               name="price_limit" required>
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                            Please introduce a valid price limit.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+                <h2>Alert settings</h2>
+                <div class="form-group">
+                    <label for="inputCheckingFreq">Check every (minutes):</label>
+                    <div class="qty">
+                        <span class="minus bg-dark">-</span>
+                        <input name="check_frequency" type="number" required id="inputCheckingFreq" class="count"
+                               min="10" value="10">
+                        <span class="plus bg-dark">+</span>
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                            Please introduce a valid price limit.
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputAlertEmail">Contact Email(s):</label>
+                    <input type="email" id="inputAlertEmail" required class="form-control"
+                           placeholder="admin@example.com"
+                           name="alert_email" aria-describedby="emailHelpBlock">
+                    <small id="emailHelpBlock" class="form-text text-muted">
+                        You can provide a valid email addresses
+                    </small>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Please introduce your email to notify you.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputAlertPhone">Contact Phone:</label>
+                    <input type="text" id="inputAlertPhone" class="form-control" placeholder="(210)-202-2332"
+                           name="alert_phone">
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="False" checked id="defaultCheck1"
+                           name="active">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Active
+                    </label>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-2">
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Save Alert</button>
+
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-link" href="{{ url_for ('users.user_alerts') }}">Cancel</a>
+            </div>
+
+        </div>
+
+
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts%}
+{{super()}}
+<script>
+	$(document).ready(function(){
+
+   			$(document).on('click','.plus',function(){
+				$('.count').val(parseInt($('.count').val()) + 1 );
+    		});
+        	$(document).on('click','.minus',function(){
+    			$('.count').val(parseInt($('.count').val()) - 1 );
+    				if ($('.count').val() == 0) {
+						$('.count').val(1);
+					}
+    	    	});
+ 		});
+
+
+$(function() {
+'use strict';
+
+
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+</script>
+{% endblock %}

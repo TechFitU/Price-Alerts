@@ -1,0 +1,266 @@
+{% extends "bootstrap/base.html" %}
+{# {% import "bootstrap/fixes.html" as fixes %} #}
+{% import "bootstrap/utils.html" as utils %}
+{% block head %}
+{{super()}}
+{# {{fixes.ie8()}} #}
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" class="holderjs">
+{% endblock %}
+
+
+{% block title %}
+{% include "store/_brandname.html" %} - {% block page_name %} Get Prices Alerts! {% endblock %}
+{% endblock %}
+
+{% block styles %}
+<!-- Bootstrap CSS -->
+{% if current_user.is_anonymous %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+{% endif %}
+{% if current_user.theme %}
+<link rel="stylesheet" href="{{ current_user.theme }}">
+{% else %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+{% endif %}
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<!--Style for this site-->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/store.css')}}">
+
+{% endblock styles %}
+
+{% block navbar %}
+<nav class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark fixed-top ">
+    <a class="navbar-brand" href="{{ url_for ('site.home') }}">
+        {% block navbar_brand %}
+        <!--src="{{ url_for( 'static', filename='site/img/logo.png') }}"-->
+        <img data-src="holder.js/64x64?theme=sky&font=Material Icon&size=10&auto=yes&text=TechFitU" alt="logo">
+        {% include "store/_brandname.html" %}
+        {% endblock %}
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for ('site.home') }}">
+                    <i class="fa fa-home"></i>
+                    Home
+                    <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for ('users.user_alerts') }}">
+                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                    My Alerts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fa fa-envelope-o">
+                        <span class="badge badge-danger">11</span>
+                    </i>
+                    Messages
+
+
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('site.contact') }}">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                    Contact</a>
+            </li>
+
+            <!--<li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li>-->
+            <!--<li class="nav-item dropdown">-->
+            <!--<a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>-->
+            <!--<div class="dropdown-menu" aria-labelledby="dropdown01">-->
+            <!--<a class="dropdown-item" href="#">Action</a>-->
+            <!--<a class="dropdown-item" href="#">Another action</a>-->
+            <!--<a class="dropdown-item" href="#">Something else here</a>-->
+            <!--</div>-->
+            <!--</li>-->
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <div class="card-body row no-gutters align-items-center">
+
+                <!--end of col-->
+                <div class="col">
+                    <input class="form-control form-control-lg form-control-borderless" type="search"
+                           placeholder="Search alerts or keywords">
+                </div>
+                <!--end of col-->
+                <div class="col-auto">
+
+                    <button class="btn btn-lg btn-success" type="submit">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                        Search
+                    </button>
+                </div>
+                <!--end of col-->
+            </div>
+        </form>
+        {% if not current_user.is_anonymous %}
+        <ul class="navbar-nav ">
+            <li class="nav-item dropdown my-2 mr-auto">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    {{ current_user.username }}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="{{ url_for ('users.user_profile') }}">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        Profile
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for ('users.logout') }}">
+                        <i class="fa fa-sign-out" aria-hidden="true"></i>
+                        Logout
+                    </a>
+                </div>
+            </li>
+        </ul>
+        {% else %}
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for ('users.login_user') }}">
+                    <i class="fa fa-sign-in" aria-hidden="true"></i>
+                    Login
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% with msgs = get_flashed_messages(category_filter=["success"]) %}
+    {% if msgs %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-success" role="alert">
+                <p>
+                    {%- for msg in msgs %}
+                    {{ msg }}
+                    {% endfor -%}
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% endwith %}
+
+    {% with errors = get_flashed_messages(category_filter=["error"]) %}
+    {% if errors %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <ul>
+                    {%- for msg in errors %}
+                    <li><strong>{{ msg }}</strong></li>
+                    {% endfor -%}
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% endwith %}
+
+    {% block main %}
+    {% endblock %}
+</div>
+
+<!-- Site footer -->
+{% block footer %}
+<!-- Some social button for contact will do -->
+<a name="contact"></a>
+
+
+<footer>
+    <div class="container-fluid bg-dark py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="row py-0">
+                        <div class="col-sm-1 hidden-md-down">
+                            <a class="bg-circle bg-info" href="#">
+                                <i class="fa fa-2x fa-fw fa-address-card" aria-hidden="true "></i>
+                            </a>
+                        </div>
+                        <div class="col-sm-11 text-white">
+                            <div>
+                                <h4>  Developers</h4>
+                                <p>   <span class="header-font">Tech</span>Fit<span class="header-font">U</span>.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="d-inline-block">
+                        <div class="bg-circle-outline d-inline-block" style="background-color:#3b5998">
+                            <a href="https://www.facebook.com/"><i class="fa fa-2x fa-fw fa-facebook text-white"></i>
+                            </a>
+                        </div>
+                        <div class="bg-circle-outline d-inline-block" style="background-color:#4099FF">
+                            <a href="https://twitter.com/">
+                                <i class="fa fa-2x fa-fw fa-twitter text-white"></i></a>
+                        </div>
+
+                        <div class="bg-circle-outline d-inline-block" style="background-color:#0077B5">
+                            <a href="https://www.linkedin.com/company/">
+                                <i class="fa fa-2x fa-fw fa-linkedin text-white"></i></a>
+                        </div>
+                        <div class="bg-circle-outline d-inline-block" style="background-color:#d34836">
+                            <a href="https://www.google.com/">
+                                <i class="fa fa-2x fa-fw fa-google text-white"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer><!--footer-->
+
+<p class="text-center"> &copy; Company TechFitU. All right reserved. </p>
+<!--/.footer-bottom-->
+
+
+{% endblock %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/holder/2.9.4/holder.min.js" crossorigin="anonymous"></script>
+{% endblock %}

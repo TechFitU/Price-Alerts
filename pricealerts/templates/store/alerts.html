@@ -1,0 +1,194 @@
+{% extends "store/base.html" %}
+
+{% block page_name %} Listing your alerts {% endblock %}
+
+{% block styles %}
+{{super()}}
+<style>
+    .view-group {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.thumbnail
+{
+    margin-bottom: 30px;
+    padding: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+}
+
+.item.list-group-item
+{
+    float: none;
+    width: 100%;
+    background-color: #fff;
+    margin-bottom: 30px;
+    -ms-flex: 0 0 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    border: 0;
+}
+.item.list-group-item .img-event {
+    float: left;
+    width: 30%;
+}
+
+.item.list-group-item .list-group-image
+{
+    margin-right: 10px;
+}
+.item.list-group-item .thumbnail
+{
+    margin-bottom: 0px;
+    display: inline-block;
+}
+.item.list-group-item .caption
+{
+    float: left;
+    width: 70%;
+    margin: 0;
+}
+
+.item.list-group-item:before, .item.list-group-item:after
+{
+    display: table;
+    content: " ";
+}
+
+.item.list-group-item:after
+{
+    clear: both;
+}
+
+</style>
+{% endblock %}
+
+
+{% block main %}
+<!--<header>-->
+<!--<div class="collapse bg-dark" id="navbarHeader">-->
+<!--<div class="container">-->
+<!--<div class="row">-->
+<!--<div class="col-sm-8 col-md-7 py-4">-->
+<!--<h4 class="text-white">About</h4>-->
+<!--<p class="text-muted">Add some information about the album below, the author, or any other background context. Make it a few sentences long so folks can pick up some informative tidbits. Then, link them off to some social networking sites or contact information.</p>-->
+<!--</div>-->
+<!--<div class="col-sm-4 offset-md-1 py-4">-->
+<!--<h4 class="text-white">Contact</h4>-->
+<!--<ul class="list-unstyled">-->
+<!--<li><a href="#" class="text-white">Follow on Twitter</a></li>-->
+<!--<li><a href="#" class="text-white">Like on Facebook</a></li>-->
+<!--<li><a href="#" class="text-white">Email me</a></li>-->
+<!--</ul>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--<div class="navbar navbar-dark bg-dark shadow-sm">-->
+<!--<div class="container d-flex justify-content-between">-->
+<!--<a href="#" class="navbar-brand d-flex align-items-center">-->
+<!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>-->
+<!--<strong>Album</strong>-->
+<!--</a>-->
+<!--<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--<span class="navbar-toggler-icon"></span>-->
+<!--</button>-->
+<!--</div>-->
+<!--</div>-->
+<!--</header>-->
+
+<main role="main">
+    <div class="container">
+        {% if alerts | length == 0 %}
+        <p class="lead">There is not saved alerts for {{ current_user.name }}. </p>
+        <p>
+                <a class="btn btn-primary btn-lg my-2" href="{{ url_for ('alerts.create_alert') }}">I want to create a
+                    product price alert</a>
+                <!--<a href="#" class="btn btn-secondary my-2">Review my alerts</a>-->
+            </p>
+        {% else %}
+        <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+
+                <a class="btn btn-primary my-2" href="{{ url_for ('alerts.create_alert') }}">New price alert</a>
+
+
+            </div>
+
+            <div class="btn-group mr-2" role="group" aria-label="Second group">
+                <button class="btn btn-info btn-secondary"  type="button" id="list">
+                    List View
+                </button>
+                <button class="btn btn-danger btn-secondary" type="button" id="grid">
+                    Grid View
+                </button>
+              </div>
+
+        </div>
+
+        <div id="products" class="row view-group">
+            {% for alert in alerts %}
+            <div class="item col-xs-4 col-lg-4">
+                <div class="thumbnail card">
+                    <div class="img-event">
+                        <img class="group list-group-image img-fluid" src="http://placehold.it/400x250/000/fff" alt=""/>
+                    </div>
+                    <div class="caption card-body">
+                        <h4 class="group card-title inner list-group-item-heading">
+                            {{ alert.title}} </h4>
+                        <p class="group inner list-group-item-text">
+                            At {{ alert.item.store.url_prefix }} <br>
+                            Price limit: $ {{ alert.price_limit }} / Current Price: $ {{ alert.item.price }}<br>
+                            <small>Last checked: {{ alert.last_checked_delay }} mins ago</small>
+                        </p>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-4">
+                                <p class="lead">
+                                    $ {{ alert.item.price }}</p>
+                            </div>
+
+                            <div class="col-xs-12 col-md-4 d-flex justify-content-between align-items-right">
+                                <div class="btn-group">
+                                    <a href="{{ url_for ('alerts.activate_deactivate_alert', alert_id=alert.id) }}">
+                                        <button type="button" class="btn btn-sm btn-success">{% if
+                                            alert.active == true %}Deactivate {% else %}Activate {% endif %}
+                                        </button>
+                                    </a> &nbsp;
+                                    <a href="{{ url_for ('alerts.edit_alert', alert_id=alert.id) }}">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+    </div>
+
+</main>
+
+
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script>
+    $('#list').click(function(event){event.preventDefault();$('#products .item').addClass('list-group-item');});
+            $('#grid').click(function(event){event.preventDefault();$('#products .item').removeClass('list-group-item');$('#products .item').addClass('grid-group-item');});
+
+</script>
+{% endblock %}
+

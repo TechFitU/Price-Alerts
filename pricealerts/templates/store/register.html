@@ -1,0 +1,149 @@
+{% extends "bootstrap/base.html" %}
+{% block page_name %} Sign Up {% endblock %}
+{% block styles %}
+{{super()}}
+
+<link rel="stylesheet" href="{{ url_for ('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="col-md-12">
+        <form class="form-signin needs-validation" method="post" action="" novalidate>
+            <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+            <h1 class="text-center h3 mb-3 font-weight-normal">!Lets check out!<br> Its Free to sign up</h1>
+            {{ form.csrf_token }}
+            {% if form.csrf_token.errors %}
+            <div class="invalid-feedback is-invalid">You have submitted an invalid CSRF token</div>
+            {% endif %}
+            <div class="form-group">
+                {{ form.name.label }}
+                {{ form.name(class='form-control', placeholder="Name", required="required", autofocus="autofocus") }}
+                <div class="invalid-feedback is-invalid">
+                    {% if form.name.errors %}
+                    <ol>
+                        {% for error in form.name.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(maxlength=35, class='form-control', placeholder="Email address", required="required" ) }}
+                <div class="invalid-feedback is-invalid">
+                    {% if form.email.errors %}
+                    <ol>
+                        {% for error in form.email.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.phone.label }}
+                {{ form.phone(class='form-control', placeholder="Phone") }}
+                <div class="invalid-feedback is-invalid">
+                    {% if form.phone.errors %}
+                    <ol>
+                        {% for error in form.phone.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class='form-control', placeholder="Password", required="required") }}
+                <div class="invalid-feedback is-invalid">
+                    {% if form.password.errors %}
+                    <ol>
+                        {% for error in form.password.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.confirm.label }}
+                {{ form.confirm(class='form-control', placeholder="Password", required="required") }}
+                <div class="invalid-feedback is-invalid">
+                    {% if form.confirm.errors %}
+                    <ol>
+                        {% for error in form.confirm.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="checkbox mb-3">
+                <label>
+                    {{ form.accept_rules }} {{ form.accept_rules.label }}
+                    <!--<input type="checkbox" value="remember-me"> Remember me-->
+                </label>
+                <div class="invalid-feedback is-invalid">
+                    {% if form.accept_rules.errors %}
+                    <ol>
+                        {% for error in form.accept_rules.errors %}
+                        <li><strong>{{ error }}</strong></li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for ('static', filename='js/sha512.min.js') }}" crossorigin="anonymous"></script>
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+    /*(function($){
+        $(".form-signin").on('submit', function(e){
+
+            e.preventDefault();
+            $('#inputPassword').val(sha512($('#inputPassword').val()));
+            //Detaching or unbinding the submit event with this handler.
+            $(this).off( "submit" )
+
+            $(this).submit();
+        });
+    })(jQuery)*/
+
+</script>
+{% endblock %}
