@@ -58,4 +58,8 @@ Or on Windows cmd::
 Open http://127.0.0.1:5000 in a browser.
 
 ## Deployment
+Demo deployed on Heroku.
+
+   https://alert-pricing-service.herokuapp.com/
+ 
     
