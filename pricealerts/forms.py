@@ -1,6 +1,10 @@
+import decimal
+
+import wtforms
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, PasswordField
-from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError
+from wtforms import (StringField, BooleanField, PasswordField,  DecimalField)
+from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
+    NumberRange
 
 from pricealerts.models.model import UserModel
 from pricealerts.utils.helpers import parse_phone
@@ -104,8 +108,15 @@ class RegistrationForm(FlaskForm):
     confirm = PasswordField('Repeat Password',
                             validators=[DataRequired(), EqualTo('password', message='Passwords must match')],
                             widget=CustomPasswordInput())
-    accept_rules = BooleanField('I accept the site rules', validators=[InputRequired()], default=True)
+    accept_rules = BooleanField('I accept the site rules', validators=[DataRequired()], default=True)
 
     class Meta:
         csrf = True  # Explicit better than implicit
         locales = ('en_US', 'es_MX')
+
+
+
+class AlertForm(FlaskForm):
+    url = StringField('Product url', validators=[DataRequired(), URL()], widget=MyTextInput())
+    price_limit = DecimalField('Price limit', places=2, rounding=decimal.ROUND_UP,
+                               validators=[DataRequired(), NumberRange(2,100000.00)], widget=MyTextInput())

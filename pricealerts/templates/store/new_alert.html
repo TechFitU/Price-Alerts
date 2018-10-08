@@ -1,5 +1,5 @@
 {% extends "store/base.html" %}
-
+{% import "bootstrap/wtf.html" as wtf %}
 {% block page_name %} New Alert {% endblock %}
 {% block styles %}
 {{super()}}
@@ -39,7 +39,7 @@
     border-radius: 50%;
     background-clip: padding-box;
 }
-div {
+div.qty {
     text-align: center;
 }
 .minus:hover{
@@ -74,38 +74,47 @@ input:disabled{
 
 <div class="container">
 
-    <form method="post" class="form-alert needs-validation" novalidate action="">
-        <!--If the template doesn't use a FlaskForm or WTForm, render a hidden input with the token in the form.-->
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <form method="post" class="needs-validation" novalidate action="">
+
 
         <h1 class="h3 mb-3 font-weight-normal">New Alert</h1>
         <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+        {{ form.csrf_token }}
+        {% if form.csrf_token.errors %}
+            <div class="invalid-feedback is-invalid">You have submitted an invalid CSRF token</div>
+        {% endif %}
 
         <div class="row">
-
             <div class="col-md-6 mb-3">
                 <h2>What to alert</h2>
 
                 <div class="form-group">
-                    <label for="inputProductUrl">Product Url:</label>
-                    <input type="url" id="inputProductUrl" class="form-control" placeholder="Product Url" name="url"
-                           required autofocus>
-
+                    {{ form.url.label }}
+                    {{ form.url(class='form-control', type="url", placeholder="Product url", required="required", autofocus="autofocus") }}
                     <div class="valid-feedback">
                         Looks good!
                     </div>
                     <div class="invalid-feedback">
-                        Please introduce a valid URL.
+                        Please provide a valid url.
+                        {% if form.url.errors %}
+                        <ol>
+                            {% for error in form.url.errors %}
+                            <li><strong>{{ error }}</strong></li>
+                            {% endfor %}
+                        </ol>
+                        {% endif %}
                     </div>
                 </div>
+
+
                 <div class="form-group">
-                    <label for="inputPriceLimit">Price under:</label>
+                    {{ form.price_limit.label }}
+
                     <div class="input-group mb-2">
                         <div class="input-group-prepend">
                             <div class="input-group-text">$ or &euro;</div>
                         </div>
-                        <input type="number" id="inputPriceLimit" class="form-control" placeholder="Price limit"
-                               name="price_limit" required>
+                        {{ form.price_limit(class='form-control', type='number',placeholder="Price limit", required="required") }}
                         <div class="valid-feedback">
                             Looks good!
                         </div>
@@ -114,6 +123,7 @@ input:disabled{
                         </div>
                     </div>
                 </div>
+
 
             </div>
 
@@ -131,7 +141,7 @@ input:disabled{
                             Looks good!
                         </div>
                         <div class="invalid-feedback">
-                            Please introduce a valid price limit.
+                            Please introduce a valid minutes value.
                         </div>
                     </div>
                 </div>
@@ -154,6 +164,12 @@ input:disabled{
                     <label for="inputAlertPhone">Contact Phone:</label>
                     <input type="text" id="inputAlertPhone" class="form-control" placeholder="(210)-202-2332"
                            name="alert_phone">
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Please introduce your phone to notify you.
+                    </div>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="False" checked id="defaultCheck1"
@@ -164,6 +180,8 @@ input:disabled{
                 </div>
 
             </div>
+
+
         </div>
 
 

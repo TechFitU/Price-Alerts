@@ -3,7 +3,7 @@
 {% block styles %}
 {{super()}}
 
-<link rel="stylesheet" href="{{ url_for ('static', filename='css/login.css') }}">
+<link rel="stylesheet" href="{{ url_for ('static', filename='css/login-orig.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -20,7 +20,11 @@
             <div class="form-group">
                 {{ form.name.label }}
                 {{ form.name(class='form-control', placeholder="Name", required="required", autofocus="autofocus") }}
-                <div class="invalid-feedback is-invalid">
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+                <div class="invalid-feedback">
+                    Please provide a valid name.
                     {% if form.name.errors %}
                     <ol>
                         {% for error in form.name.errors %}

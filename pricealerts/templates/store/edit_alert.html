@@ -1,13 +1,70 @@
 {% extends "store/base.html" %}
 {% block page_name %} Edit Alert {% endblock %}
-
 {% block styles %}
 {{super()}}
 
 <style>
-    .form-alert{
-    margin-top:4.25em;
+    .qty .count {
+    color: #000;
+    display: inline-block;
+    vertical-align: top;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 30px;
+    padding: 0 2px
+    ;min-width: 35px;
+    text-align: center;
+}
+.qty .plus {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+    color: white;
+    width: 30px;
+    height: 30px;
+    font: 30px/1 Arial,sans-serif;
+    text-align: center;
+    border-radius: 50%;
     }
+.qty .minus {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+    color: white;
+    width: 30px;
+    height: 30px;
+    font: 30px/1 Arial,sans-serif;
+    text-align: center;
+    border-radius: 50%;
+    background-clip: padding-box;
+}
+div.qty {
+    text-align: center;
+}
+.minus:hover{
+    background-color: #717fe0 !important;
+}
+.plus:hover{
+    background-color: #717fe0 !important;
+}
+/*Prevent text selection*/
+span{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+input{
+    border: 0;
+    width: 2%;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input:disabled{
+    background-color:white;
+}
 
 </style>
 {% endblock %}
@@ -16,7 +73,7 @@
 
 <div class="container">
 
-    <form method="post" class="form-alert" action="">
+    <form method="post" class="form-alert needs-validation" action="" novalidate>
         <h1 class="h3 mb-3 font-weight-normal">Edit Alert</h1>
         <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <!--If the template doesn't use a FlaskForm or WTForm, render a hidden input with the token in the form.-->
@@ -43,18 +100,45 @@
                 <h2>Alert settings</h2>
                 <div class="form-group">
                     <label for="inputCheckingFreq">Check every (minutes):</label>
-                    <input type="number" id="inputCheckingFreq" class="form-control " value="{{ alert.check_every }}"
-                           placeholder="10 minutes" name="check_frequency">
+                    <div class="qty">
+                        <span class="minus bg-dark">-</span>
+                        <input name="check_frequency" type="number" required id="inputCheckingFreq" class="count"
+                               min="10" value="10">
+                        <span class="plus bg-dark">+</span>
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                            Please introduce a valid time frequency.
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="inputAlertEmail">Contact Email:</label>
                     <input type="email" id="inputAlertEmail" class="form-control" value="{{ alert.contact_email }}"
-                           placeholder="admin@example.com" name="alert_email">
+                           placeholder="admin@example.com" aria-describedby="emailHelpBlock" required name="alert_email">
+                    <small id="emailHelpBlock" class="form-text text-muted">
+                        You can provide a valid email addresses
+                    </small>
+
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Please introduce your email to notify you.
+                    </div>
+
                 </div>
                 <div class="form-group">
                     <label for="inputAlertPhone">Contact Phone:</label>
                     <input type="text" id="inputAlertPhone" class="form-control" value="{{ alert.contact_phone }}"
                            placeholder="(210)-202-2332" name="alert_phone">
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Please introduce your phone to notify you.
+                    </div>
                 </div>
                 <div class="form-group form-check">
                     <input class="form-check-input" type="checkbox" {% if alert.active %} checked="True" {% endif %} id="defaultCheck1" name="active">
@@ -83,4 +167,45 @@
 
     </form>
 </div>
+{% endblock %}
+
+{% block scripts%}
+{{super()}}
+<script>
+	$(document).ready(function(){
+
+   			$(document).on('click','.plus',function(){
+				$('.count').val(parseInt($('.count').val()) + 1 );
+    		});
+        	$(document).on('click','.minus',function(){
+    			$('.count').val(parseInt($('.count').val()) - 1 );
+    				if ($('.count').val() == 0) {
+						$('.count').val(1);
+					}
+    	    	});
+ 		});
+
+
+$(function() {
+'use strict';
+
+
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+</script>
 {% endblock %}
