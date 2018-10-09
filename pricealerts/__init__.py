@@ -29,12 +29,12 @@ def create_app(test_config=None):
     # load the default settings instance config
     app.config.from_object('pricealerts.settings')
     #
-    # if test_config is None:
-    #     # load the instance config, if it exists, when not testing
-    #     app.config.from_pyfile('config.py', silent=False)
-    # else:
-    #     # load the test config if passed in
-    #     app.config.from_mapping(test_config)
+    if test_config is None:
+        # load the instance config, if it exists, when not testing
+        app.config.from_pyfile('config.py', silent=False)
+    else:
+        # load the test config if passed in
+        app.config.from_mapping(test_config)
 
 
     # Flask-Login needs to be created and initialized right after the application instance

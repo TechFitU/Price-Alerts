@@ -17,14 +17,14 @@ ENV = env('FLASK_ENV', default='development')  # same as: os.environ['FLASK_ENV'
 DEBUG = env('FLASK_DEBUG', default=True)
 
 if ENV == 'development':
-    default_db_uri = env('DATABASE_URL',
+    SQLALCHEMY_DATABASE_URI = env('DATABASE_URL',
                          default='sqlite:///{}pricealerts.sqlite'.format(os.path.join(BASE_DIR, 'instance/')))
 if ENV == 'production':
-    default_db_uri = env(
+    SQLALCHEMY_DATABASE_URI = env(
         'DATABASE_URL', default='postgresql://test:test@localhost:5432/store')
 
 JSON_AS_ASCII = False  # If False When using json.dumps() every non-ascii character won't be escaped
-SQLALCHEMY_DATABASE_URI = default_db_uri
+
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 PROPAGATE_EXCEPTIONS = True
 SQLALCHEMY_ECHO = True if bool(DEBUG) is True else False

@@ -43,6 +43,6 @@ loglevel = 'error'
 #errorlog = '/var/log/gunicorn/gunicorn-price-alerts.error.log'
 
 # Process Naming
-proc_name = 'price_alert_service'
+proc_name = 'alert_pricing_service'
 
 ###### End Gunicorn settings#####
