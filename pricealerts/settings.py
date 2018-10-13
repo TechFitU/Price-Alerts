@@ -16,6 +16,16 @@ env = environ.Env()
 ENV = env('FLASK_ENV', default='development')  # same as: os.environ['FLASK_ENV'] = True
 DEBUG = env('FLASK_DEBUG', default=True)
 
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_L10N = True
+
+USE_TZ = True
+
+
 if ENV == 'development':
     SQLALCHEMY_DATABASE_URI = env('DATABASE_URL',
                          default='sqlite:///{}pricealerts.sqlite'.format(os.path.join(BASE_DIR, 'instance/')))

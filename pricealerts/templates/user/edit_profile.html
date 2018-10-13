@@ -1,0 +1,525 @@
+{% extends "store/base.html" %}
+{% block page_name %} User Profile {% endblock %}
+
+{% block styles %}
+{{super()}}
+<style>
+/***
+User Profile Sidebar by @keenthemes
+A component of Metronic Theme - #1 Selling Bootstrap 3 Admin Theme in Themeforest: http://j.mp/metronictheme
+Licensed under MIT
+***/
+
+
+/* Profile container */
+.profile {
+  margin: 20px 0;
+}
+
+/* Profile sidebar */
+.profile-sidebar {
+  padding: 20px 0 10px 0;
+  background: #fff;
+}
+
+.profile-userpic img {
+  float: none;
+  margin: 0 auto;
+  width: 50%;
+  height: 50%;
+  -webkit-border-radius: 50% !important;
+  -moz-border-radius: 50% !important;
+  border-radius: 50% !important;
+}
+
+.profile-usertitle {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.profile-usertitle-name {
+  color: #5a7391;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+
+.profile-usertitle-job {
+  text-transform: uppercase;
+  color: #5b9bd1;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.profile-userbuttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.profile-userbuttons .btn {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 15px;
+  margin-right: 5px;
+}
+
+.profile-userbuttons .btn:last-child {
+  margin-right: 0px;
+}
+
+.profile-usermenu {
+  margin-top: 30px;
+}
+
+.profile-usermenu ul li {
+  border-bottom: 1px solid #f0f4f7;
+}
+
+.profile-usermenu ul li:last-child {
+  border-bottom: none;
+}
+
+.profile-usermenu ul li a {
+  color: #93a3b5;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.profile-usermenu ul li a i {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.profile-usermenu ul li a:hover {
+  background-color: #fafcfd;
+  color: #5b9bd1;
+}
+
+.profile-usermenu ul li.active {
+  border-bottom: none;
+}
+
+.profile-usermenu ul li a.active {
+  color: #5b9bd1;
+  background-color: #f6f9fb;
+  border-left: 2px solid #5b9bd1;
+  margin-left: -2px;
+}
+
+/* Profile Content */
+.profile-content {
+  padding: 20px;
+  background: #fff;
+  min-height: 460px;
+}
+
+</style>
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <div class="row profile">
+        <div class="col-md-3">
+            <div class="profile-sidebar bg-light">
+                <!-- SIDEBAR USERPIC -->
+                <div class="profile-userpic text-center">
+                    <img src="{% if user.profile.picture %} {{ url_for('static', filename='images/'+user.profile.picture) }} {% else %} {{ url_for('static', filename='images/default_profile.png') }}  {% endif %}"
+                         class="img-square img-fluid" alt="">
+                </div>
+                <!-- END SIDEBAR USERPIC -->
+                <!-- SIDEBAR USER TITLE -->
+                <div class="profile-usertitle">
+                    <div class="profile-usertitle-name">
+                        {{ current_user.name }}
+                    </div>
+                    <div class="profile-usertitle-job">
+                        Price Hunter
+                    </div>
+                </div>
+                <!-- END SIDEBAR USER TITLE -->
+                <!-- SIDEBAR BUTTONS -->
+                {#<div class="profile-userbuttons">
+                    <button type="button" class="btn btn-success btn-sm">Follow</button>
+                    <button type="button" class="btn btn-danger btn-sm">Message</button>
+                </div>#}
+                <!-- END SIDEBAR BUTTONS -->
+                <!-- SIDEBAR MENU -->
+                <div class="profile-usermenu">
+                    <ul class="nav flex-column">
+                        {#<li >
+                            <a data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" class="nav-link">
+                                <i class="fa fa-home" ></i>
+                                Overview </a>
+                        </li>#}
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" role="tab" aria-controls="settings" aria-selected="true"  href="#settings">
+                                <i class="fa fa-user"></i>
+                                Account Settings </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" role="tab" aria-controls="messages" aria-selected="true"  href="#messages">
+                                <i class="fa fa-inbox"></i>
+                                Messages </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-help"></i>
+                                Help </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- END MENU -->
+
+
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="profile-content bg-light">
+                <div class="row">
+                    <div class="col-sm-12"><h3>{{ current_user.username }}</h3></div>
+
+                </div>
+                <div class="row">
+                    <div class="col-sm-3"><!--left col-->
+
+
+                        <div class="text-center">
+                            <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                                 class="avatar img-fluid img-thumbnail" alt="avatar">
+
+                            <input type="file" class="text-center center-block file-upload" name="picture">
+                        </div>
+                        <hr/>
+
+
+
+
+                        {#<div class="panel panel-default">
+                            <div class="panel-heading">Website <i class="fa fa-link fa-1x"></i></div>
+                            <div class="panel-body"><a href="http://bootnipets.com">bootnipets.com</a></div>
+                        </div>#}
+
+
+                        <ul class="list-group">
+                            <li class="list-group-item text-muted">Activity <i class="fa fa-dashboard fa-1x"></i></li>
+                            <li class="list-group-item text-right"><span
+                                    class="pull-left"><strong>Shares</strong></span> 125
+                            </li>
+                            <li class="list-group-item text-right"><span class="pull-left"><strong>Alerts</strong></span>
+                                {{ current_user.alerts|length }}
+                            </li>
+                            {#<li class="list-group-item text-right"><span class="pull-left"><strong>Posts</strong></span>
+                                37
+                            </li>
+                            <li class="list-group-item text-right"><span
+                                    class="pull-left"><strong>Followers</strong></span> 78
+                            </li>#}
+                        </ul>
+
+                        {#<div class="panel panel-default">
+                            <div class="panel-heading">Social Media</div>
+                            <div class="panel-body">
+                                <i class="fa fa-facebook fa-2x"></i> <i class="fa fa-github fa-2x"></i> <i
+                                    class="fa fa-twitter fa-2x"></i> <i class="fa fa-pinterest fa-2x"></i> <i
+                                    class="fa fa-google-plus fa-2x"></i>
+                            </div>
+                        </div>#}
+
+                    </div><!--/col-3-->
+                    <div class="col-sm-9">
+
+                        <div class="tab-content">
+                            {#<div class="tab-pane active" id="home">
+
+
+                            </div>#}
+                            <div class="tab-pane" id="messages">
+
+
+                            </div>
+                            <div class="tab-pane active" id="settings">
+                                <hr>
+                                <form class="form" action="" method="post" enctype="multipart/form-data">
+                                    <!--If the template doesn't use a FlaskForm or WTForm, render a hidden input with the token in the form.-->
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="first_name">First name</label>
+                                            <input type="text" class="form-control" name="first_name" id="first_name"
+                                                   placeholder="first name" value="{{ first_name }}"  required title="enter your first name if any.">
+                                        </div>
+
+
+                                    </div>
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="last_name">Last name</label>
+                                            <input type="text" class="form-control" name="last_name" id="last_name"
+                                                   placeholder="last name" value="{{ last_name }}" required title="enter your last name if any.">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="phone">Phone</label>
+                                            <input type="text" class="form-control" name="phone" id="phone"
+                                                   placeholder="enter phone" value="{{ user.phone }}" title="enter your phone number if any.">
+                                        </div>
+                                    </div>
+
+                                    {#<div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" name="email" id="email"
+                                                   placeholder="you@email.com" title="enter your email.">
+                                        </div>
+                                    </div>#}
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="theme">Theme</label>
+                                            <select class="form-control" id="theme" name="theme"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="password">Password</label>
+                                            <input type="password" required class="form-control" name="password" id="password"
+                                                   placeholder="password" title="enter your password.">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="password2">Verify</label>
+                                            <input type="password" required class="form-control" name="password2" id="password2"
+                                                   placeholder="password2" title="enter your password2.">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="tz">Timezone</label>
+                                            <select required name="tz"  class="form-control" id="tz">
+                                                {% for k, v in tz_data %}
+                                                <option {% if user.profile.timezone == v %} selected {% endif %} value="{{ k }}">{{ v }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+
+                                        <div class="col-xs-6">
+                                            <label for="bio">Bio</label>
+                                            <textarea class="form-control counted" name="bio" id="bio"
+                                                  placeholder="Type in your message" rows="5"
+                                                  style="margin-bottom:10px;">{{ user.profile.bio }}</textarea>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Please introduce a comment for us.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h6 class="pull-right" id="counter">320 characters remaining</h6>
+
+                                    <div class="form-group">
+                                        <div class="col-xs-12">
+                                            <br>
+                                            <button class="btn btn-lg btn-success" type="submit"><i
+                                                    class="glyphicon glyphicon-ok-sign"></i> Save
+                                            </button>
+                                            <button class="btn btn-lg" type="reset"><i
+                                                    class="glyphicon glyphicon-repeat"></i> Reset
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div><!--/tab-pane-->
+
+                        </div><!--/tab-content-->
+                    </div><!--/col-9-->
+
+
+            </div><!--/row-->
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script>
+
+     /**
+     *
+     * jquery.charcounter.js version 1.2
+     * requires jQuery version 1.2 or higher
+     * Copyright (c) 2007 Tom Deater (http://www.tomdeater.com)
+     * Licensed under the MIT License:
+     * http://www.opensource.org/licenses/mit-license.php
+     *
+     */
+
+    (function($) {
+        /**
+         * attaches a character counter to each textarea element in the jQuery object
+         * usage: $("#myTextArea").charCounter(max, settings);
+         */
+
+        $.fn.charCounter = function (max, settings) {
+            max = max || 100;
+            settings = $.extend({
+                container: "<span></span>",
+                classname: "charcounter",
+                format: "(%1 characters remaining)",
+                pulse: true,
+                delay: 0
+            }, settings);
+            var p, timeout;
+
+            function count(el, container) {
+                el = $(el);
+                if (el.val().length > max) {
+                    el.val(el.val().substring(0, max));
+                    if (settings.pulse && !p) {
+                        pulse(container, true);
+                    };
+                };
+                if (settings.delay > 0) {
+                    if (timeout) {
+                        window.clearTimeout(timeout);
+                    }
+                    timeout = window.setTimeout(function () {
+                        container.html(settings.format.replace(/%1/, (max - el.val().length)));
+                    }, settings.delay);
+                } else {
+                    container.html(settings.format.replace(/%1/, (max - el.val().length)));
+                }
+            };
+
+            function pulse(el, again) {
+                if (p) {
+                    window.clearTimeout(p);
+                    p = null;
+                };
+                el.animate({ opacity: 0.1 }, 100, function () {
+                    $(this).animate({ opacity: 1.0 }, 100);
+                });
+                if (again) {
+                    p = window.setTimeout(function () { pulse(el) }, 200);
+                };
+            };
+
+            return this.each(function () {
+                var container;
+                if (!settings.container.match(/^<.+>$/)) {
+                    // use existing element to hold counter message
+                    container = $(settings.container);
+                } else {
+                    // append element to hold counter message (clean up old element first)
+                    $(this).next("." + settings.classname).remove();
+                    container = $(settings.container)
+                                    .insertAfter(this)
+                                    .addClass(settings.classname);
+                }
+                $(this)
+                    .unbind(".charCounter")
+                    .bind("keydown.charCounter", function () { count(this, container); })
+                    .bind("keypress.charCounter", function () { count(this, container); })
+                    .bind("keyup.charCounter", function () { count(this, container); })
+                    .bind("focus.charCounter", function () { count(this, container); })
+                    .bind("mouseover.charCounter", function () { count(this, container); })
+                    .bind("mouseout.charCounter", function () { count(this, container); })
+                    .bind("paste.charCounter", function () {
+                        var me = this;
+                        setTimeout(function () { count(me, container); }, 10);
+                    });
+                if (this.addEventListener) {
+                    this.addEventListener('input', function () { count(this, container); }, false);
+                };
+                count(this, container);
+            });
+        };
+
+    })(jQuery);
+
+
+
+    $(document).ready(function() {
+        $(".counted").charCounter(320,{container: "#counter"});
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        window.addEventListener('load', function() {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+              form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+              }, false);
+            });
+          }, false);
+
+        var readURL = function(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('.avatar').attr('src', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+
+        $(".file-upload").on('change', function(){
+            readURL(this);
+        });
+
+        //Getting Bootswatch themes
+        $.getJSON("https://bootswatch.com/api/4.json", function (data) {
+          var themes = data.themes;
+          var select = $("select");
+          select.show();
+
+
+          themes.forEach(function(value, index){
+            option = $("<option />").val(themes[index].cssMin).text(value.name);
+
+            select.append(option);
+          });
+
+
+        }, "json").fail(function(){
+            $(".alert").toggleClass("alert-info alert-danger");
+            $(".alert h4").text("Failure!");
+        });
+
+        $('li a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+
+          $(e.target).addClass( 'active' ); // newly activated tab
+          $(e.relatedTarget).removeClass('active'); // previous active tab
+        });
+});
+
+</script>
+{% endblock %}

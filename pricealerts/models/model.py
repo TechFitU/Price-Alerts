@@ -7,7 +7,9 @@ Module that contains the model definition for every table in a SQLAlchemy databa
 import datetime
 import os
 import re
+import uuid
 
+import pytz
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from flask import json
@@ -15,10 +17,12 @@ from flask.globals import current_app
 from sqlalchemy.orm.exc import NoResultFound
 from twilio.base.exceptions import TwilioRestException
 
+from pricealerts import settings
 from pricealerts.db import db
 from pricealerts.models.base_model import BaseModel
 from pricealerts.settings import env
 from pricealerts.utils import notifications
+from pricealerts.utils.helpers import parse_phone
 
 
 class ItemNotFoundError(Exception):
@@ -323,9 +327,9 @@ class TokenModel(db.Model, BaseModel):
             return True
 
 
-# from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from pricealerts.utils.helpers import generate_password_hash, check_password_hash, parse_phone
+#from pricealerts.utils.helpers import generate_password_hash, check_password_hash, parse_phone
 
 
 class UserErrors(Exception):
@@ -361,13 +365,17 @@ class UserModel(db.Model, UserMixin, BaseModel):
     alerts = db.relationship('AlertModel', lazy=True, backref='user',
                              cascade="all, delete, delete-orphan")
 
-    def __init__(self, name, username, password, phone=None, is_admin=False, roles=None):
+    profile = db.relationship("ProfileModel", uselist=False, back_populates='user')
+
+    def __init__(self, name, username, password, phone=None, is_admin=False, is_staff=False, roles=None):
         self.username = username
         self.name = name
         self.password = generate_password_hash(password)  # Encrypt password before save it
         self.is_admin = is_admin
+        self.is_staff = is_staff
         self.phone = "-".join(parse_phone(phone)) if isinstance(phone, str) and phone != '' else None
         self.roles = list() if roles is None else roles
+
 
     def __str__(self):
         return "User(id='%s')" % self.id
@@ -412,7 +420,7 @@ class UserModel(db.Model, UserMixin, BaseModel):
         if not user:
             raise UserNotFoundError("The user %s not found." % email)
 
-        if not check_password_hash(password, user.password):
+        if not check_password_hash(user.password, password):
             raise IncorrectPasswordError("Password sent doesn't match with the user's password")
 
         return user
@@ -420,3 +428,32 @@ class UserModel(db.Model, UserMixin, BaseModel):
     @classmethod
     def find_by_username(cls, username):
         return cls.query.filter_by(username=username).first()
+
+
+class BaseProfile(db.Model):
+    __tablename__ = "profiles"
+
+    slug = db.Column(db.String(64), primary_key=True, default = uuid.uuid4)
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
+    user = db.relationship("UserModel", back_populates='profile')
+
+    type= db.Column(db.String(20))
+
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'profiles'
+    }
+
+class ProfileModel(BaseProfile):
+
+    picture = db.Column(db.String(64), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    email_verified = db.Column(db.Boolean(), default=True)
+    timezone = db.Column(db.String(32), default=settings.TIME_ZONE)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'profile'
+    }
+
+    def __str__(self):
+        return "{}'s profile". format(self.user)

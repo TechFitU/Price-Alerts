@@ -114,7 +114,7 @@ input:disabled{
                         <div class="input-group-prepend">
                             <div class="input-group-text">$ or &euro;</div>
                         </div>
-                        {{ form.price_limit(class='form-control', type='number',placeholder="Price limit", required="required") }}
+                        {{ form.price_limit(class_='form-control', type='number', placeholder="Price limit", required="required") }}
                         <div class="valid-feedback">
                             Looks good!
                         </div>
@@ -131,11 +131,11 @@ input:disabled{
             <div class="col-md-6 mb-3">
                 <h2>Alert settings</h2>
                 <div class="form-group">
-                    <label for="inputCheckingFreq">Check every (minutes):</label>
+                    {{ form.check_frequency.label }}
                     <div class="qty">
                         <span class="minus bg-dark">-</span>
-                        <input name="check_frequency" type="number" required id="inputCheckingFreq" class="count"
-                               min="10" value="10">
+
+                        {{ form.check_frequency(type='number', value='10',min='5', max='10',class='count', id="inputCheckingFreq") }}
                         <span class="plus bg-dark">+</span>
                         <div class="valid-feedback">
                             Looks good!
@@ -146,10 +146,9 @@ input:disabled{
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="inputAlertEmail">Contact Email(s):</label>
-                    <input type="email" id="inputAlertEmail" required class="form-control"
-                           placeholder="admin@example.com"
-                           name="alert_email" aria-describedby="emailHelpBlock">
+                    {{ form.alert_email.label(for='inputAlertEmail') }}
+                    {{ form.alert_email(class='form-control',id='inputAlertEmail',placeholder='admin@example.com') }}
+
                     <small id="emailHelpBlock" class="form-text text-muted">
                         You can provide a valid email addresses
                     </small>
@@ -161,9 +160,9 @@ input:disabled{
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="inputAlertPhone">Contact Phone:</label>
-                    <input type="text" id="inputAlertPhone" class="form-control" placeholder="(210)-202-2332"
-                           name="alert_phone">
+                    {{ form.alert_phone(for='inputAlertPhone')}}
+                    {{ form.alert_phone(type="phone",class="form-control", placeholder="(210)-202-2332")}}
+
                     <div class="valid-feedback">
                         Looks good!
                     </div>
@@ -172,8 +171,8 @@ input:disabled{
                     </div>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="False" checked id="defaultCheck1"
-                           name="active">
+                    {{ form.active }}
+
                     <label class="form-check-label" for="defaultCheck1">
                         Active
                     </label>
@@ -207,12 +206,13 @@ input:disabled{
 	$(document).ready(function(){
 
    			$(document).on('click','.plus',function(){
+   			if(parseInt($('.count').val()) < 10)
 				$('.count').val(parseInt($('.count').val()) + 1 );
     		});
         	$(document).on('click','.minus',function(){
     			$('.count').val(parseInt($('.count').val()) - 1 );
-    				if ($('.count').val() == 0) {
-						$('.count').val(1);
+    				if ($('.count').val() == 4) {
+						$('.count').val(5);
 					}
     	    	});
  		});
@@ -229,6 +229,7 @@ window.addEventListener('load', function() {
     // Loop over them and prevent submission
     var validation = Array.prototype.filter.call(forms, function(form) {
       form.addEventListener('submit', function(event) {
+
         if (form.checkValidity() === false) {
           event.preventDefault();
           event.stopPropagation();

@@ -1,13 +1,15 @@
 import datetime
+import os
 
-from flask import request, render_template, url_for, flash, Blueprint
+import pytz
+from flask import request, render_template, url_for, flash, Blueprint, current_app
 from flask_login import current_user, logout_user, login_required
 from flask_login import login_user as session_login
 from werkzeug.urls import url_parse
-from werkzeug.utils import redirect
+from werkzeug.utils import redirect, secure_filename
 
 from pricealerts.forms import LoginForm, RegistrationForm
-from pricealerts.models.model import UserErrors
+from pricealerts.models.model import UserErrors, ProfileModel
 from pricealerts.models.model import UserModel
 
 user_blueprint = Blueprint('users', __name__, url_prefix='/users', template_folder='templates')
@@ -72,13 +74,14 @@ def login_user():
                 flash('User {0} logged in correctly'.format(user.name), 'success')
                 return redirect(next_page)
 
+
         except UserErrors as loginEx:
             # Logout the user, just in case there is a session saved for this user previously
             logout_user()
-            flash(loginEx.message, 'danger')
+            flash(loginEx.message, 'error')
             # return redirect(url_for('.login_user'))
 
-    return render_template('store/login.html', title='Sign In', form=form)
+    return render_template('user/login.html', title='Sign In', form=form)
 
 
 @user_blueprint.route('/register', methods=['GET', 'POST'])
@@ -94,12 +97,12 @@ def register_user():
                 session_login(user)
                 return redirect(url_for('.user_alerts'))
         except UserErrors as regError:
-            flash(regError.message)
+            flash(regError.message, 'error')
             # return redirect(url_for('.register_user'))
 
     print(form.data)
     print(form.email.errors)
-    return render_template('store/register.html', title='Sign Up', form=form)
+    return render_template('user/register.html', title='Sign Up', form=form)
 
 
 # @user_blueprint.route('/register',methods=['GET', 'POST'])
@@ -133,13 +136,75 @@ def logout():
 #     session['username'] = None
 #     return redirect(url_for('.login_user'))
 
+TZ_DATA = [(v, v) for v in pytz.common_timezones]
 
-@user_blueprint.route('/profile', methods=['GET', 'POST'])
+@user_blueprint.route('/me', methods=['GET'])
+@user_blueprint.route('<string:slug>/', methods=['GET'])
 @login_required
-def user_profile():
+def user_profile(slug=None):
+    kwargs = { }
+
+    if slug:
+        profile = ProfileModel.find_one(slug=slug)
+        kwargs["show_user"] = profile.user
+    else:
+        kwargs["show_user"] = current_user
+
+    if kwargs["show_user"] == current_user:
+        kwargs["editable"] = True
+    else:
+        kwargs["editable"] = False
+
+
+    return render_template('user/profile.html', **kwargs)
+
+@user_blueprint.route('me/edit/', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    error = None
+
     if request.method == 'POST':
         theme = request.form['theme']
-        current_user.theme = theme
-        current_user.save_to_db()
+        first_name = request.form.get('first_name', None)
+        last_name = request.form.get('last_name', None)
+        phone = request.form.get('phone', None)
+        password = request.form.get('password', None)
+        password2 = request.form.get('password2', None)
+        picture = request.files.get('picture', None)
+        bio = request.form.get('bio', None)
+        tz = request.form.get('tz', None)
 
-    return render_template('user/profile.html', user=current_user)
+        if not first_name:
+            error = 'First name is required.'
+        elif not last_name:
+            error = 'Last name is required.'
+        elif not password:
+            error = 'Last name is required.'
+        elif password != password2:
+            error = "Passwords do not match"
+        elif not tz:
+            error = 'Timezone must be selected'
+
+        if error is None:
+            current_user.name = first_name + " " + last_name
+            current_user.phone = phone
+            current_user.theme = theme
+            current_user.set_password(password)
+            if current_user.profile is None:
+                current_user.profile = ProfileModel()
+
+            current_user.profile.bio = bio
+            current_user.profile.timezone = tz
+            if picture is not None:
+                filename = secure_filename(picture.filename)
+                current_user.profile.picture = filename
+                picture.save(os.path.join(current_app.instance_path, 'photos', filename))
+
+            current_user.save_to_db()
+            return redirect(url_for('users.edit_profile'))
+
+        flash(error, category='error')
+
+    first_name, last_name = current_user.name.split(" ")
+    return render_template('user/edit_profile.html', user=current_user, first_name=first_name,
+                           last_name=last_name, tz_data = TZ_DATA)

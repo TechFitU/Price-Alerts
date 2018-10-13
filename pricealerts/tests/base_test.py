@@ -27,13 +27,7 @@ class BaseTest(TestCase):
 
         # For PostgreSQL in production: postgresql://user:password@localhost:port/database
         # Configure once the database uri for all tests
-        BaseTest.flaskApp = create_app(test_config={
-            "SQLALCHEMY_DATABASE_URI": "postgresql://test:1234@localhost:5432/pricealerts_test" ,
-            "BASE_API_URL": "None",
-            "DEBUG": False,
-            "SQLALCHEMY_ECHO": False,
-            "PROPAGATE_EXCEPTIONS": True
-        })
+        BaseTest.flaskApp = create_app()
         # Set my flask app to test mode
         BaseTest.flaskApp.testing = True
 

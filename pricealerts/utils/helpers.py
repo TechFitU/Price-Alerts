@@ -46,7 +46,7 @@ def parse_phone(phone):
     $           # end of string
     ''', re.VERBOSE)
     res = phonePattern.search(phone)
-    return res.groups() if res is not None else None
+    return [match for match in res.groups() if match != ''] if res is not None else None
 
 
 def logger(func):

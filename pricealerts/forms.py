@@ -1,8 +1,9 @@
 import decimal
 
+import pytz
 import wtforms
 from flask_wtf import FlaskForm
-from wtforms import (StringField, BooleanField, PasswordField,  DecimalField)
+from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField)
 from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
     NumberRange
 
@@ -14,7 +15,7 @@ from .widgets import MyTextInput, CustomPasswordInput
 class LoginForm(FlaskForm):
     email = StringField('Email Address',
                         validators=[DataRequired(), Email(), Length(min=6, max=35)], widget=MyTextInput(),
-                        render_kw={'class': 'form-control', 'placeholder':'Email address'})
+                        render_kw={'class': 'form-control', 'placeholder': 'Email address'})
     password = PasswordField('Password', description='Password',
                              validators=[DataRequired(), Length(min=6, max=512)], widget=CustomPasswordInput())
     remember_me = BooleanField('Remember me', validators=[InputRequired()], default=True)
@@ -96,6 +97,7 @@ def name_validator():
 
 
 class RegistrationForm(FlaskForm):
+
     name = StringField('Name', validators=[DataRequired(), LengthValidator(min=4, max=75), name_validator()],
                        widget=MyTextInput())
     email = StringField('Email Address',
@@ -115,8 +117,22 @@ class RegistrationForm(FlaskForm):
         locales = ('en_US', 'es_MX')
 
 
-
 class AlertForm(FlaskForm):
     url = StringField('Product url', validators=[DataRequired(), URL()], widget=MyTextInput())
     price_limit = DecimalField('Price limit', places=2, rounding=decimal.ROUND_UP,
-                               validators=[DataRequired(), NumberRange(2,100000.00)], widget=MyTextInput())
+                               validators=[DataRequired(), NumberRange(2, 100000.00)], widget=MyTextInput())
+
+    check_frequency = IntegerField('Check frequency',
+                                   widget=MyTextInput(),
+                                   validators=[DataRequired(),
+                                               NumberRange(min=5, max=10,
+                                                           message="This number must be between 5 and 10 minutes")])
+
+    alert_email = StringField('Contact Email', _name='alert_email',
+                        validators=[DataRequired(), Email(), LengthValidator(min=6, max=35)], widget=MyTextInput(),
+                              render_kw={'type':'email'})
+
+    alert_phone = StringField('Contact Phone', validators=[Optional(), phone_validator()], widget=MyTextInput())
+
+    active = BooleanField('Active', validators=[DataRequired()], default=True,
+                          render_kw={'class':'form-check-input', 'id':'defaultCheck1'})
