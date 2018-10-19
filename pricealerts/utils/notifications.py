@@ -41,7 +41,6 @@ class NotificationDispatcher(object):
                   "text": "Testing some Mailgun awesomness!"
                   })
         if response.status_code != 200:
-            # TODO: send email using SMTP server (credentials in Local.env or environment variables)
             try:
                 import smtplib
                 from email.message import EmailMessage
