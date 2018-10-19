@@ -1,41 +1,111 @@
 import os
+from logging.handlers import SMTPHandler
 
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFError, CSRFProtect
-
+from werkzeug.exceptions import BadRequest, NotFound
+from logging.config import dictConfig
+from pricealerts.settings import *
 from pricealerts.db import db
 from pricealerts.models.model import UserModel, ItemModel, StoreModel, AlertModel
-
+import logging
+LOGGING_CONFIG = None
 
 def create_app(test_config=None):
+    # Create logging config before Flask instance app is created
+    # Reset logging
+    # (see http://www.caktusgroup.com/blog/2015/01/27/Django-Logging-Configuration-logging_config-default-settings-logger/)
+
+    logfile = os.path.join(LOGFILE_ROOT, 'project.log') if env('FLASK_ENV')=='production' \
+                else  os.path.join(LOGFILE_ROOT, 'project-dev.log')
+
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+
+        'formatters': {
+            'default': {
+                'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            },
+            'verbose': {
+                'format':
+                    "[%(asctime)s] %(levelname)s [%(pathname)s:%(lineno)s] %(message)s",
+                'datefmt':
+                    "%b/%d/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'handlers': {
+            'wsgi': {
+                'class': 'logging.StreamHandler',
+                'stream': 'ext://flask.logging.wsgi_errors_stream',
+                'formatter': 'default'
+            },
+            'proj_log_handler': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler',
+                'filename': logfile,
+                'formatter': 'verbose'
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            }
+        },
+
+        'root': {
+            'level': 'INFO',
+            'handlers': ['wsgi', 'proj_log_handler']
+        }
+    }
+    dictConfig(LOGGING)
+
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-
-        SECRET_KEY=os.urandom(16),  # SECURITY WARNING: keep the secret key used in production secret!
-        # im not going to use instance/pricealerts.sqlite as database
-        # DATABASE=os.path.join(app.instance_path, 'pricealerts.sqlite'),
-    )
 
 
-    # ensure the instance folder exists
+
+    # ensure the instance folder exists with photos and logs folders inside
     try:
-        os.makedirs(app.instance_path)
+        os.makedirs(app.instance_path, exist_ok=True)
+        os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
+        os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
     except OSError:
         pass
 
     # load the default settings instance config
-    app.config.from_object('pricealerts.settings')
-    #
+    import pricealerts.settings
+    app.config.from_object(pricealerts.settings)
+
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+        app.config.from_pyfile('development.py', silent=True)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
+    if env('FLASK_ENV')=='production':
+        # Email Errors to Admins in production mode
+
+        mail_handler = SMTPHandler(
+            mailhost=(app.config['SMTP_SERVER'], app.config['SMTP_PORT']),
+            fromaddr=app.config['EMAIL_FROM'],
+            toaddrs=app.config['ADMINS_EMAIL'],
+            subject='Application Error',
+            credentials=(app.config['SMTP_USER'], app.config['SMTP_PASS']),
+            timeout=app.config['EMAIL_SEND_TIMEOUT'])
+
+        mail_handler.setLevel(logging.ERROR)
+        mail_handler.setFormatter(
+            logging.Formatter(
+                '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'))
+
+        app.logger.addHandler(mail_handler)
 
     # Flask-Login needs to be created and initialized right after the application instance
     # Docs OK: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins
@@ -66,8 +136,15 @@ def create_app(test_config=None):
         :param error: CSRFError instance
         :return: Template rendered with the reason
         """
-        return render_template('error.html', reason=reason)
+        return render_template('error.html', code=400, reason=reason)
 
+    @app.errorhandler(BadRequest)
+    def handle_bad_request(e):
+        return render_template('error.html', code=400, reason=e.description)
+
+    @app.errorhandler(NotFound)
+    def handle_not_found(e):
+        return render_template('error.html', code=404, reason='Opps Page is not available !')
     # Register db with the Application and initialize database tables
     db.init_app(app)
 
@@ -95,6 +172,7 @@ def create_app(test_config=None):
                 user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True)
                 db.session.add(user)
                 db.session.commit()
+
 
     # Register views with blueprints
     from .views.users import user_blueprint

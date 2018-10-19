@@ -6,7 +6,7 @@ from flask_wtf import FlaskForm
 from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField)
 from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
     NumberRange
-
+from flask_wtf import Form
 from pricealerts.models.model import UserModel
 from pricealerts.utils.helpers import parse_phone
 from .widgets import MyTextInput, CustomPasswordInput

@@ -95,30 +95,31 @@ def edit_alert(alert_id):
         flash("Alert not found", category='error')
         return redirect(url_for('users.user_alerts'))
 
-    if request.method == 'GET':
-        return render_template('store/edit_alert.html',
-                               username=current_user.username if current_user.username is not None else 'Buyer',
-                               alert=alert)
-    form = AlertForm(request.form)
-    if request.method == 'POST' and form.validate():
 
-        alert.price_limit = float(request.form['price_limit'])
-        alert.check_every = int(request.form['check_frequency'])
-        alert.contact_email = request.form['alert_email']
-        alert.contact_phone = request.form['alert_phone']
-        alert.contact_email = request.form['contact_email']
-        alert.active = bool(request.form.get('active', False))
+    form = AlertForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        form.populate_obj(alert)
         alert.save_to_db()
 
         user = UserModel.find_one(username=current_user.username)
-        alert.send_email_alert(subject="ALERT MODIFIED from Pricing Alert Service <{}>".format(env('SMTP_USER')),
+        try:
+            alert.send_email_alert(subject="ALERT MODIFIED from Pricing Alert Service <{}>".format(env('EMAIL_FROM')),
                                message="New Price Alert has been updated for {}.<br>"
                                        "{} <{}> have setup this email address ({}) to receive alerts regarding prices"
                                        "drops over this product. <br/>"
                                        "You can now seat down and let us do "
                                        "the hard work".format(alert.item.name, user.name, user.username, alert.contact_email))
+        except Exception:
+            flash('Error sending email to {}. A notification has been '
+                  'emitted to the system administrator'.format(alert.contact_emaiil), category='error')
 
-    return redirect(url_for('users.user_alerts'))
+        return redirect(url_for('users.user_alerts'))
+
+    return render_template('store/edit_alert.html',
+                           username=current_user.username if current_user.username is not None else 'Buyer',
+                           alert=alert)
+
 
 
 @alert_blueprint.route('/activate_deactivate/<int:alert_id>')

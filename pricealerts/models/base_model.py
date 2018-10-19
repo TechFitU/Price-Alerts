@@ -2,7 +2,7 @@
 import datetime
 
 from flask_login import current_user
-
+from flask.globals import current_app
 from pricealerts.db import db
 from pricealerts.utils.helpers import time_monotonic
 
@@ -76,14 +76,21 @@ class BaseModel(object):
 
     @time_monotonic
     def save_to_db(self):
-
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as ex:
+            current_app.logger.error('Data was not saved. Error: {}'.format(str(ex)))
+            raise
 
         return self
 
     @time_monotonic
     def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as ex:
+            current_app.logger.error('Data was not saved. Error: {}'.format(str(ex)))
+            raise
         return self

@@ -2,9 +2,11 @@
 import functools
 import re
 import time
+from urllib.parse import urlparse, urljoin
 
-from flask import request
+from flask import request, url_for
 from passlib.handlers.pbkdf2 import pbkdf2_sha512
+from werkzeug.utils import redirect
 
 
 def secure_cookie():
@@ -63,6 +65,34 @@ def logger(func):
 
     return decorator
 
+def is_safe_url(target):
+    '''
+    A common pattern with form processing is to automatically redirect back to the user.
+    There are usually two ways this is done: by inspecting a next URL parameter or by looking at the HTTP referrer.
+    Unfortunately you also have to make sure that users are not redirected to malicious attacker's pages and
+    just to the same host
+
+    :param target: url of a web page
+    :return: True if valid url, otherwise False
+    '''
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+def get_redirect_target():
+    for target in request.args.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+
+def redirect_back(endpoint, **values):
+    target = request.form.get('next', None)
+
+    if not target or not is_safe_url(target):
+        target = url_for(endpoint, **values)
+    return redirect(target)
 
 def time_monotonic(func):
     @functools.wraps(func)

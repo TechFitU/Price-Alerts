@@ -25,7 +25,8 @@
       <a href="{{ url_for('users.edit_profile') }}" class="btn btn-info">Edit Profile</a>
       {% endif %}
     </div>
-    <div class="col-sm-2"><img title="profile picture" class="img-circle img-responsive" src="{% if show_user.profile.picture %} {{ url_for('static', filename='images/'+show_user.profile.picture) }} {% else %} {{ url_for('static', filename='images/default_profile.png') }}  {% endif %}">
+    <div class="col-sm-2">
+        <img src="{% if show_user.profile.picture %} {{ url_for('users.uploaded_file', filename=show_user.profile.picture) }} {% else %} {{ url_for('static', filename='images/default_profile.png') }}  {% endif %}" class="rounded img-fluid img-thumbnail" alt="">
     </div>
   </div>
 </div>

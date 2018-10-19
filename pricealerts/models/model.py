@@ -278,11 +278,10 @@ class AlertModel(db.Model, BaseModel):
                                                                                            self.item.url))
 
     def send_email_alert(self, subject, message):
-        try:
-            notifications.NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
+
+        notifications.NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
                                                             subject=subject, message=message)
-        except Exception as ex:
-            print(ex)
+
 
 
 class TokenNotFound(Exception):
@@ -444,7 +443,7 @@ class BaseProfile(db.Model):
         'polymorphic_identity': 'profiles'
     }
 
-class ProfileModel(BaseProfile):
+class ProfileModel(BaseProfile, BaseModel):
 
     picture = db.Column(db.String(64), nullable=True)
     bio = db.Column(db.Text, nullable=True)
