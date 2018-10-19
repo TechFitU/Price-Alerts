@@ -35,7 +35,7 @@
   <div class="row">
     <div class="col-sm-4">
       <ul class="list-group">
-        <li class="list-group-item text-muted">Profile</li>
+        <li class="list-group-item text-muted">{{ show_user.name }}'s profile</li>
         <li class="list-group-item text-right"><span class="pull-left"><strong>Email:</strong></span> {{ show_user.username }}
 	  {% if show_user.profile.email_verified %}
 	    <span class="glyphicon glyphicon-ok-circle" aria-hidden="true" title="This email address has been verified"></span>
@@ -45,17 +45,18 @@
 	    <span class="sr-only">Not Verified</span>
 	  {% endif %}
 	</li>
-        <li class="list-group-item text-right"><span class="pull-left"><strong>Joined</strong></span> {{ show_user.date_joined }}</li>
+        <li class="list-group-item text-right"><span class="pull-left"><strong>Joined</strong></span> {{ show_user.created }}</li>
         <li class="list-group-item text-right"><span class="pull-left"><strong>Last seen</strong></span> {{ show_user.last_login }}</li>
+
       </ul>
     </div>
     <div class="col-sm-8">
       <div class="panel panel-default">
-        <div class="panel-heading">{{ show_user.name }}'s Profile
 
-	</div>
-        <div class="panel-body">
-	  <strong>Bio</strong>: {{ show_user.profile.bio }}
+       <div class="panel-body">
+
+            <strong>API Key: </strong> {{ show_user.api_key }}<br/><br/>
+           <strong>Bio</strong>: {{ show_user.profile.bio }}
 	</div>
       </div>
     </div>

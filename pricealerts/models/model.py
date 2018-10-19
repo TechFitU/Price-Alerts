@@ -133,9 +133,9 @@ class ItemModel(db.Model, BaseModel):
                              cascade="all, delete, delete-orphan")
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
 
-    def __init__(self, name, url, price=None):
+    def __init__(self, url, store, price=None):
         self.url = url
-        self.store = StoreModel.find_by_url(url)
+        self.store = store
         try:
             self.name, self.price, self.image = self.load_item_data()
         except:
@@ -163,7 +163,7 @@ class ItemModel(db.Model, BaseModel):
         \D*         # optional separator is any number of non-digits
         (\d+\.\d+)? # optional price boundary, try to match float numbers is a price range, ie: 45.00 - 55.12 
         ''', re.VERBOSE)
-        only_price_and_title_tag_ = SoupStrainer(name=['title', 'p', 'span', 'img'])
+        only_price_img_and_title_tag_ = SoupStrainer(name=['title', 'p', 'span', 'img'])
 
 
         req = requests.get(self.url)
@@ -171,24 +171,29 @@ class ItemModel(db.Model, BaseModel):
 
         if req.status_code == 200:
             html_doc = req.content
-            soup = BeautifulSoup(html_doc, 'html.parser', parse_only=only_price_and_title_tag_)
+            soup = BeautifulSoup(html_doc, 'html.parser', parse_only=only_price_img_and_title_tag_)
 
-            # Get price from ebay.comjohnlewis.com
+            # Get price from ebay.com
             element = soup.find('span', attrs={'itemprop':'price'})
             if element is None:
-                # Get price from
+                # Get price from johnlewis.com
                 element =soup.find('p', class_={'price price--large'})
             if element is None:
                 element = soup.find('span', attrs={'aria-label':re.compile('price')})
+
 
 
             price = matcher.search(element.text.strip())
             if price is not None:
                 price = float(price.group(1))
 
+
             name = soup.find(name="title").string
 
-            image = None  # soup.find("img", attrs={'alt':name}).src
+            # item image for johnlewis.com
+            image = soup.find("img", attrs={'alt':re.compile(name)})
+            if image is not None:
+                image = image.get('src')
             return name, price, image
 
         codes = {404: 'Not found', 403: 'Permission denied'}
@@ -361,13 +366,16 @@ class UserModel(db.Model, UserMixin, BaseModel):
     is_admin = db.Column(db.Boolean(), default=False)
     is_staff = db.Column(db.Boolean(), default=False)
     theme = db.Column(db.String(150), nullable=True)
+    api_key = db.Column(db.String(255), nullable=False)
+    last_login = db.Column(db.DateTime(timezone=False), nullable=True)
     alerts = db.relationship('AlertModel', lazy=True, backref='user',
                              cascade="all, delete, delete-orphan")
 
     profile = db.relationship("ProfileModel", uselist=False, back_populates='user')
 
-    def __init__(self, name, username, password, phone=None, is_admin=False, is_staff=False, roles=None):
+    def __init__(self, name, username, password, api_key, phone=None, is_admin=False, is_staff=False, roles=None):
         self.username = username
+        self.api_key=api_key
         self.name = name
         self.password = generate_password_hash(password)  # Encrypt password before save it
         self.is_admin = is_admin
@@ -397,7 +405,7 @@ class UserModel(db.Model, UserMixin, BaseModel):
         user = cls.find_by_username(email)
 
         if user is None:
-            user = cls(name=name, password=password, username=email, phone=phone)
+            user = cls(name=name, password=password, username=email, phone=phone, api_key=os.urandom(35))
             try:
                 user.save_to_db()
             except Exception as ex:

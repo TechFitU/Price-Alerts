@@ -1,3 +1,4 @@
+import base64
 import os
 from logging.handlers import SMTPHandler
 
@@ -72,7 +73,7 @@ def create_app(test_config=None):
 
     # ensure the instance folder exists with photos and logs folders inside
     try:
-        os.makedirs(app.instance_path, exist_ok=True)
+        os.makedirs(app.instance_path)
         os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
         os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
     except OSError:
@@ -109,17 +110,43 @@ def create_app(test_config=None):
 
     # Flask-Login needs to be created and initialized right after the application instance
     # Docs OK: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins
-    login = LoginManager(app)
+    loginmanager = LoginManager(app)
 
     # Flask-Login provides a very useful feature that forces users to log in before they can view certain pages of the
     # application. If a user who is not logged in tries to view a protected page, Flask-Login will automatically redirect
     # the user to the login form, and only redirect back to the page the user wanted to view after the login process is complete.
     # Flask-Login needs to know what is the view function that handles logins.
-    login.login_view = 'users.login_user'
+    loginmanager.login_view = 'users.login_user'
 
-    @login.user_loader
+    @loginmanager.user_loader
     def load_user(id):
         return UserModel.query.get(int(id))
+
+    @loginmanager.request_loader
+    def load_user_from_request(request):
+
+        # first, try to login using the api_key url arg
+        api_key = request.args.get('api_key')
+        if api_key:
+            user = UserModel.query.filter_by(api_key=api_key).first()
+            if user:
+                return user
+
+        # next, try to login using Basic Auth
+        api_key = request.headers.get('Authorization')
+        if api_key:
+            api_key = api_key.replace('Basic ', '', 1)
+            try:
+                api_key = base64.b64decode(api_key)
+            except TypeError:
+                pass
+            user = UserModel.query.filter_by(api_key=api_key).first()
+            if user:
+                return user
+
+        # finally, return None if both methods did not login the user
+        return None
+
 
     # Initialize bootstrap
     Bootstrap(app)
@@ -157,7 +184,7 @@ def create_app(test_config=None):
             # Create initial data
             user = UserModel.find_by(username='alexmtnezf@gmail.com')
             if not user:
-                user = UserModel('Alex Martinez', 'alexmtnezf@gmail.com', '123456', is_admin=True)
+                user = UserModel('Alex Martinez', 'alexmtnezf@gmail.com', '123456', is_admin=True, api_key=os.urandom(35))
                 db.session.add(user)
                 db.session.commit()
 
@@ -169,7 +196,7 @@ def create_app(test_config=None):
             # Create initial data
             user = UserModel.find_by(username='alexmtnezf@gmail.com')
             if not user:
-                user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True)
+                user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True, api_key=os.urandom(35))
                 db.session.add(user)
                 db.session.commit()
 

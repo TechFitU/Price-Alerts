@@ -36,7 +36,7 @@ def create_alert():
         user = UserModel.find_one(username=current_user.username)
 
         try:
-            StoreModel.find_by_url(prod_url)
+            store = StoreModel.find_by_url(prod_url)
         except StoreNotFoundError:
             only_title = SoupStrainer('title')
             # Find the store on Internet
@@ -53,13 +53,13 @@ def create_alert():
             html_doc = req.content
             soup = BeautifulSoup(html_doc, 'html.parser', parse_only=only_title)
 
-            StoreModel(soup.title.string, store_url).save_to_db()
+            store = StoreModel(soup.title.string, store_url).save_to_db()
 
         # Create the item
         item = ItemModel.find_one(url=prod_url)
         if not item:
             try:
-                item = ItemModel('Item X {0}'.format(random.randint(1, 100000)), prod_url).save_to_db()
+                item = ItemModel( prod_url, store=store).save_to_db()
             except ItemNotLoadedError as ex:
                 flash(ex.message, category='error')
                 return redirect(url_for('users.user_alerts'))
@@ -90,16 +90,16 @@ def create_alert():
 @login_required
 def edit_alert(alert_id):
     alert = AlertModel.find_by_id(alert_id)
-
+    curr_url = alert.item.url
     if not alert:
         flash("Alert not found", category='error')
         return redirect(url_for('users.user_alerts'))
-
 
     form = AlertForm(request.form)
 
     if request.method == 'POST' and form.validate():
         form.populate_obj(alert)
+        alert.item.url=curr_url
         alert.save_to_db()
 
         user = UserModel.find_one(username=current_user.username)

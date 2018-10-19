@@ -73,23 +73,14 @@ def login_user():
             user = UserModel.login_valid(form.data['email'], form.password.data)
             if user:
                 session_login(user, remember=form.remember_me.data)
+                user.last_login = datetime.datetime.utcnow()
+                user.save_to_db()
                 current_app.logger.info('%s logged in successfully', user.username)
-                next_page = request.args.get('next', None)
-                # is_safe_url should check if the url is safe for redirects.
-                # See http://flask.pocoo.org/snippets/62/ for an example.
-
-                # is_safe_url should check if the url is safe for redirects.
-                # See http://flask.pocoo.org/snippets/62/ for an example.
-                if not is_safe_url(next_page):
-                    return abort(400)
-
-
 
                 flash('User {0} logged in correctly'.format(user.name), 'success')
-                # If the next page is not given or is url is outside the domain of the applciation
+                # If the next page is not given or is url is outside the domain of the application
                 # next_page will be the user alerts page
-
-                return redirect(next_page or url_for('.user_alerts'))
+                return form.redirect(endpoint='.user_alerts')
 
 
         except UserErrors as loginEx:

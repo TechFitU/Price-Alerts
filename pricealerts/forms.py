@@ -2,17 +2,36 @@ import decimal
 
 import pytz
 import wtforms
+from flask import url_for
 from flask_wtf import FlaskForm
-from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField)
+from flask_wtf.file import FileAllowed, FileField, FileRequired
+from werkzeug.utils import redirect
+from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField, HiddenField)
 from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
     NumberRange
 from flask_wtf import Form
 from pricealerts.models.model import UserModel
-from pricealerts.utils.helpers import parse_phone
+from pricealerts.utils.helpers import parse_phone, is_safe_url, get_redirect_target
 from .widgets import MyTextInput, CustomPasswordInput
 
 
-class LoginForm(FlaskForm):
+class RedirectForm(FlaskForm):
+    next = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        super(RedirectForm, self).__init__(*args, **kwargs)
+        if not self.next.data:
+            self.next.data = get_redirect_target() or ''
+
+    def redirect(self, endpoint='index', **values):
+        # is_safe_url should check if the url is safe for redirects.
+        # See http://flask.pocoo.org/snippets/62/ for an example.
+        if is_safe_url(self.next.data):
+            return redirect(self.next.data)
+        target = get_redirect_target()
+        return redirect(target or url_for(endpoint, **values))
+
+class LoginForm(RedirectForm):
     email = StringField('Email Address',
                         validators=[DataRequired(), Email(), Length(min=6, max=35)], widget=MyTextInput(),
                         render_kw={'class': 'form-control', 'placeholder': 'Email address'})
