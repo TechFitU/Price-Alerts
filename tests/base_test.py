@@ -32,14 +32,14 @@ class BaseTest(TestCase):
         BaseTest.flaskApp.testing = True
 
         # Initialize our database once for every test suite (every test file that contains a BaseTest derived class)
-        with BaseTest.flaskApp.app_context():
-            db.init_app(BaseTest.flaskApp)
+        with cls.flaskApp.app_context():
+            db.init_app(cls.flaskApp)
             db.drop_all()
 
 
     def setUp(self):
         """
-        It runs once for every test method in this class and derived class
+        It runs once for every test method in this class and derived classes
         :return: None
         """
         # Make sure your database is created

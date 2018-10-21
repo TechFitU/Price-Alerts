@@ -26,7 +26,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-JSON_AS_ASCII = False  # If False When using json.dumps() every non-ascii character won't be escaped
+JSON_AS_ASCII = True  # If False When using json.dumps() every non-ascii character won't be escaped to ascii representation
 ALERT_UPDATE_TIMEOUT = env('ALERT_UPDATE_TIMEOUT', default=10) # in minutes
 ALERT_CHECK_INTERVAL = env('ALERT_CHECK_INTERVAL', default=30) # in seconds
 ADMINS_EMAIL = env('ADMINS_EMAIL').split(';')

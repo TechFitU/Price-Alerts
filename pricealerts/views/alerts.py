@@ -56,13 +56,16 @@ def create_alert():
             store = StoreModel(soup.title.string, store_url).save_to_db()
 
         # Create the item
-        item = ItemModel.find_one(url=prod_url)
-        if not item:
-            try:
-                item = ItemModel( prod_url, store=store).save_to_db()
-            except ItemNotLoadedError as ex:
-                flash(ex.message, category='error')
-                return redirect(url_for('users.user_alerts'))
+        item = ItemModel(prod_url, store_id=store.id)
+
+        try:
+            item.name, item.price, item.image = item.load_item_data()
+        except ItemNotLoadedError as ex:
+            flash(ex.message, category='error')
+            return redirect(url_for('users.user_alerts'))
+
+
+        item.save_to_db()
 
         # Create the alert
         alert = AlertModel(price_limit, item.id, user.id, check_every=check_frequency,

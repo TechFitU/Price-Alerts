@@ -59,6 +59,8 @@ class StoreModel(db.Model, BaseModel):
                             cascade="all, delete, delete-orphan")
 
     def __init__(self, name, url_prefix, tag_name="p", query_string=None):
+
+        self.id = id
         self.name = name
         self.url_prefix = url_prefix
         self.tag_name = tag_name
@@ -125,30 +127,24 @@ class ItemModel(db.Model, BaseModel):
     name = db.Column(db.String(255), unique=True)
     price = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     url = db.Column(db.String(255), nullable=True)
-    tag_name = db.Column(db.String(10))
-    query_string = db.Column(db.String(75))
-    image = db.Column(db.String(255), nullable=True)
 
     alerts = db.relationship('AlertModel', backref=db.backref('item', lazy='joined'), lazy='dynamic',
                              cascade="all, delete, delete-orphan")
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
 
-    def __init__(self, url, store, price=None):
+    def __init__(self, url, store_id, name=None,price=None, created=None, created_by=None, updated=None, updated_by=None):
         self.url = url
-        self.store = store
-        try:
-            self.name, self.price, self.image = self.load_item_data()
-        except:
-            raise
+        self.name = name
+        self.store_id = store_id
+        self.price = price
 
-        self.tag_name = self.store.tag_name
-        self.query_string = self.store.query_string
 
     def json(self):
         return {
             'name': self.name,
             'price': self.price,
-            'store_id': self.store_id
+            'store_id': self.store_id,
+            'url' : self.url
         }
 
     def load_item_data(self):
