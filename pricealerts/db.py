@@ -11,7 +11,7 @@ recorded = []
 @models_committed.connect
 def committed(sender, changes):
     """
-    This signal is sent before changed models were committed to the database
+    This signal is sent before changed common were committed to the database
     The operation is one of 'insert', 'update', and 'delete'.
 
     :param sender: The sender is the application that emitted the changes.
@@ -30,13 +30,13 @@ def committed(sender, changes):
         elif change == 'delete' and hasattr(obj, '__commit_delete__'):
             obj.__commit_delete__()
 
-    print(changes)
+    #print(changes)
 
 
 @before_models_committed.connect
 def before_committed(sender, changes):
     """
-    This signal is sent before changed models were committed to the database
+    This signal is sent before changed common were committed to the database
     The operation is one of 'insert', 'update', and 'delete'.
 
     :param sender: The sender is the application that emitted the changes.
@@ -52,4 +52,4 @@ def before_committed(sender, changes):
         elif change == 'delete' and hasattr(obj, '__before_commit_delete__'):
             obj.__before_commit_delete__()
 
-    print(changes)
+    #print(changes)

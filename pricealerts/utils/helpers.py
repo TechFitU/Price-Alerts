@@ -13,6 +13,16 @@ def secure_cookie():
     """Return true if cookie should have secure attribute"""
     return request.environ.get('wsgi.url_scheme', None) == 'https'
 
+def is_valid_email(email):
+    import re
+    # # Define pattern matcher to detect valid emails
+    pattern = r'^([\w-]+\.?)+@([\w-]+\.?)*([\w-]+)$'
+
+    matcher = re.compile(pattern)
+
+    if not matcher.match(email):
+        return False
+    return True
 
 def parse_phone(phone):
     """

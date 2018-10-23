@@ -1,8 +1,6 @@
-import os
-
 from pricealerts import create_app
 from pricealerts.db import db
-from pricealerts.models.model import AlertModel
+from pricealerts.models import AlertModel
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from pricealerts.settings import env

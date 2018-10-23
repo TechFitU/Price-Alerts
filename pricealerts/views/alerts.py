@@ -1,5 +1,3 @@
-import random
-
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from flask import Blueprint, url_for, request, flash, render_template
@@ -8,8 +6,8 @@ from werkzeug.utils import redirect
 
 from pricealerts import StoreModel, ItemModel, AlertModel, UserModel
 from pricealerts.forms import AlertForm
-from pricealerts.models.model import StoreNotFoundError, ItemNotLoadedError
-from pricealerts.settings import env, BASE_DIR, TEMPLATE_DIR
+from pricealerts.models import StoreNotFoundError, ItemNotLoadedError
+from pricealerts.settings import env
 
 alert_blueprint = Blueprint('alerts', __name__, url_prefix='/alerts', template_folder='templates')
 

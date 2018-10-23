@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-resources/models.py
+resources/common.py
 
 Module that contains api resources regarding stores information management.
 """

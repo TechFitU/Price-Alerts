@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-resources/models.py
+resources/common.py
 
 Module that contains api resources regarding items information management.
 """
@@ -9,7 +9,7 @@ from flask_restful import Resource, reqparse
 from twilio.base.exceptions import TwilioRestException
 from utils import notifications
 
-from pricealerts.models.model import ItemModel
+from pricealerts.models import ItemModel
 
 
 class ItemResource(Resource):

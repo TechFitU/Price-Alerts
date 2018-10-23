@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-models/item.py
+common/item.py
 
 Module that contains the model definition for every table in a SQLAlchemy database.
 """
@@ -11,18 +11,21 @@ import uuid
 
 import pytz
 import requests
+import sqlalchemy
 from bs4 import BeautifulSoup, SoupStrainer
 from flask import json
 from flask.globals import current_app
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 from twilio.base.exceptions import TwilioRestException
+from werkzeug.exceptions import NotFound
 
 from pricealerts import settings
 from pricealerts.db import db
-from pricealerts.models.base_model import BaseModel
+from pricealerts.common.base_model import BaseModel, DatabaseError
 from pricealerts.settings import env
 from pricealerts.utils import notifications
-from pricealerts.utils.helpers import parse_phone
+from pricealerts.utils.helpers import parse_phone, is_valid_email
 
 
 class ItemNotFoundError(Exception):
@@ -59,8 +62,6 @@ class StoreModel(db.Model, BaseModel):
                             cascade="all, delete, delete-orphan")
 
     def __init__(self, name, url_prefix, tag_name="p", query_string=None):
-
-        self.id = id
         self.name = name
         self.url_prefix = url_prefix
         self.tag_name = tag_name
@@ -75,14 +76,20 @@ class StoreModel(db.Model, BaseModel):
         }
 
     def get_item(self, item_id):
-        return self.items.find_by_id(item_id)
+        try:
 
-    def delete_item(self, id):
-        item = self.items.find_by(id=id, store_id=self.id)
-        if item:
-            self.items.remove(item)  # same as: item.delete_from_db()
-        else:
-            raise Exception()
+            return self.items.filter_by(id=item_id).first_or_404()
+        except NotFound:
+            raise ItemNotFoundError('Item not found in the store')
+
+    def delete_item(self, item_id):
+        try:
+            item = self.items.filter_by(id=item_id).first_or_404()
+        except NotFound:
+
+            raise ItemNotFoundError('Item not found in the store')
+
+        self.items.remove(item)  # same as: item.delete_from_db()
 
     @classmethod
     def find_by_url_prefix(cls, url_prefix):
@@ -138,6 +145,8 @@ class ItemModel(db.Model, BaseModel):
         self.store_id = store_id
         self.price = price
 
+    def __str__(self):
+        return "Item(id='%s', name='%s')" % (self.id, self.name)
 
     def json(self):
         return {
@@ -177,8 +186,6 @@ class ItemModel(db.Model, BaseModel):
             if element is None:
                 element = soup.find('span', attrs={'aria-label':re.compile('price')})
 
-
-
             price = matcher.search(element.text.strip())
             if price is not None:
                 price = float(price.group(1))
@@ -192,7 +199,7 @@ class ItemModel(db.Model, BaseModel):
                 image = image.get('src')
             return name, price, image
 
-        codes = {404: 'Not found', 403: 'Permission denied'}
+        codes = {404: 'Not found', 403: 'Permission denied', 500:'Internal server error'}
         raise ItemNotLoadedError('Product page not loaded correctly: {}'.format(codes[req.status_code]))
 
 
@@ -206,23 +213,41 @@ class AlertModel(db.Model, BaseModel):
     active = db.Column(db.Boolean, default=True, nullable=False)
     shared = db.Column(db.Boolean, default=False, nullable=False)
     contact_phone = db.Column(db.String(30), nullable=True)
-    contact_email = db.Column(db.String(80), nullable=True)
+    contact_email = db.Column(db.String(80), nullable=False)
     check_every = db.Column(db.Integer, default=10, nullable=False)
     last_checked = db.Column(db.DateTime(timezone=False), nullable=True)
 
-    def __init__(self, price_limit, item_id, user_id,
-                 active=True, shared=False, contact_phone=None, contact_email=None,
+    def __str__(self):
+        return "(AlertModel<id={}, user='{}', item='{}'>)".format(self.id, self.user.name, self.item.name)
+
+    def __init__(self, price_limit, item_id, user_id, contact_email,
+                 active=True, shared=False, contact_phone=None,
                  last_checked=None, check_every=10):
         self.price_limit = price_limit
         self.item_id = item_id
         self.user_id = user_id
-        self.last_checked = datetime.datetime.utcnow() if last_checked is None else last_checked
-        self.last_checked_delay = (datetime.datetime.utcnow() - self.last_checked).total_seconds() / 60
+        self.last_checked = last_checked
         self.check_every = check_every
-        self.contact_email = contact_email
+        self.contact_email = contact_email if contact_email is not None else 'undefined'
         self.contact_phone = contact_phone
         self.shared = shared
         self.active = active
+
+    def json(self):
+        return {
+            'id': self.id,
+            'price_limit': self.price_limit,
+            'last_checked': self.last_checked,
+            'check_every': self.check_every,
+            'item_id': self.item_id,
+            'item': self.item.name if self.item is not None else None,
+            'user_id': self.user_id,
+            'user': self.user.name if self.user is not None else None,
+            'active': self.active,
+            'shared': self.shared,
+            'contact_phone': self.contact_phone,
+            'contact_email': self.contact_email
+        }
 
     def send_sms_alert(self):
         try:
@@ -237,7 +262,7 @@ class AlertModel(db.Model, BaseModel):
             pass
 
 
-    def __send_simple_message(self):
+    def _send_simple_message(self):
         """
         Real call to send emails using my own domain
         :return: HttpResponse object
@@ -348,6 +373,8 @@ class IncorrectPasswordError(UserErrors):
 class RegisterUserError(UserErrors):
     pass
 
+class RegisteredUserError(UserErrors):
+    pass
 
 class UserModel(db.Model, UserMixin, BaseModel):
     __tablename__ = "users"
@@ -364,27 +391,40 @@ class UserModel(db.Model, UserMixin, BaseModel):
     theme = db.Column(db.String(150), nullable=True)
     api_key = db.Column(db.String(255), nullable=False)
     last_login = db.Column(db.DateTime(timezone=False), nullable=True)
+
     alerts = db.relationship('AlertModel', lazy=True, backref='user',
                              cascade="all, delete, delete-orphan")
 
     profile = db.relationship("ProfileModel", uselist=False, back_populates='user')
 
-    def __init__(self, name, username, password, api_key, phone=None, is_admin=False, is_staff=False, roles=None):
+    def __init__(self, name, username, password, api_key=None, phone=None, is_admin=False, is_staff=False, roles=None,
+                 theme = None, last_login = None):
         self.username = username
-        self.api_key=api_key
+        self.api_key=api_key if api_key is not None else os.urandom(16)
         self.name = name
         self.password = generate_password_hash(password)  # Encrypt password before save it
         self.is_admin = is_admin
         self.is_staff = is_staff
         self.phone = "-".join(parse_phone(phone)) if isinstance(phone, str) and phone != '' else None
         self.roles = list() if roles is None else roles
+        self.theme = theme
+        self.last_login = last_login
 
 
     def __str__(self):
         return "User(id='%s')" % self.id
 
     def json(self):
-        return {'id': self.id, 'username': self.username, 'name': self.name}
+        return {
+            'id': self.id,
+            'username': self.username,
+            'name': self.name,
+            'is_admin': self.is_admin,
+            'is_staff': self.is_staff,
+            'phone': self.phone,
+            'last_login': self.last_login,
+            'theme': self.theme
+        }
 
     def get_alerts(self):
         return self.alerts
@@ -404,7 +444,7 @@ class UserModel(db.Model, UserMixin, BaseModel):
             user = cls(name=name, password=password, username=email, phone=phone, api_key=os.urandom(35))
             try:
                 user.save_to_db()
-            except Exception as ex:
+            except DatabaseError as ex:
                 raise RegisterUserError(str(ex))
 
         return user
@@ -430,7 +470,14 @@ class UserModel(db.Model, UserMixin, BaseModel):
 
     @classmethod
     def find_by_username(cls, username):
-        return cls.query.filter_by(username=username).first()
+        try:
+            return cls.query.filter_by(username=username).first()
+        except OperationalError as ex:
+            current_app.logger.error('Data was not found. Error: {}'.format(str(ex)))
+            raise DatabaseError('Data was not found.')
+        except sqlalchemy.exc.DatabaseError as ex:
+            current_app.logger.error('Database operation error. SQL executed: {}\nError: {}'.format(ex.statement, str(ex.orig)))
+            raise DatabaseError('Database or tables was not found.')
 
 
 class BaseProfile(db.Model):

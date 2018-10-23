@@ -1,16 +1,12 @@
 import decimal
 
-import pytz
-import wtforms
 from flask import url_for
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed, FileField, FileRequired
 from werkzeug.utils import redirect
 from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField, HiddenField)
-from wtforms.validators import DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
-    NumberRange
-from flask_wtf import Form
-from pricealerts.models.model import UserModel
+from wtforms.validators import (DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
+    NumberRange)
+from pricealerts.models import UserModel
 from pricealerts.utils.helpers import parse_phone, is_safe_url, get_redirect_target
 from .widgets import MyTextInput, CustomPasswordInput
 
@@ -74,7 +70,7 @@ def email_validator(emails=None):
     if emails is None:
         emails = []
 
-    emails = "(" + "|".join(emails) + ")" if len(emails) > 0 else "[\w]+"
+    emails = "( {} )".format("|".join(emails)) if len(emails) > 0 else r"[\w]+"
 
     def _email_validator(form, field):
         """
@@ -89,7 +85,7 @@ def email_validator(emails=None):
 
         import re
         # # Define pattern matcher to detect valid emails
-        pattern = '^([\\w-]+\\.?)+@([\\w-]+\\.?)*(gmail.com|example.com)$'.format(emails)
+        pattern = r'^([\w-]+\.?)+@([\w-]+\.?)*(gmail.com|example.com)$'.format(emails)
 
         matcher = re.compile(pattern)
 

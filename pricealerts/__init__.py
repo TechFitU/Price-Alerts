@@ -1,5 +1,4 @@
 import base64
-import os
 from logging.handlers import SMTPHandler
 
 from flask import Flask, render_template
@@ -10,7 +9,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from logging.config import dictConfig
 from pricealerts.settings import *
 from pricealerts.db import db
-from pricealerts.models.model import UserModel, ItemModel, StoreModel, AlertModel
+from pricealerts.models import UserModel, ItemModel, StoreModel, AlertModel
 import logging
 LOGGING_CONFIG = None
 

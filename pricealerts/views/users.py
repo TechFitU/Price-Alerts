@@ -1,20 +1,18 @@
 import datetime
-import logging
 import os
 
 import pytz
 from flask import request, render_template, url_for, flash, Blueprint, current_app, send_from_directory
 from flask_login import current_user, logout_user, login_required
 from flask_login import login_user as session_login
-from werkzeug.exceptions import abort, NotFound, BadRequest
-from werkzeug.urls import url_parse
+from werkzeug.exceptions import NotFound
 from werkzeug.utils import redirect, secure_filename
 
 from pricealerts import settings
 from pricealerts.forms import LoginForm, RegistrationForm
-from pricealerts.models.model import UserErrors, ProfileModel
-from pricealerts.models.model import UserModel
-from pricealerts.utils.helpers import parse_phone, is_safe_url, get_redirect_target
+from pricealerts.models import UserErrors, ProfileModel
+from pricealerts.models import UserModel
+from pricealerts.utils.helpers import parse_phone, get_redirect_target
 
 user_blueprint = Blueprint('users', __name__, url_prefix='/users', template_folder='templates')
 

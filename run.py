@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pricealerts import create_app
 from pricealerts.db import db
-from pricealerts.models.model import UserModel
+from pricealerts.models import UserModel
 
 application = create_app()
 # a simple page that says hello

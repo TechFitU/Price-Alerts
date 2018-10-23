@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module models.py
+Module common.py
 
 Allows the user to register, login,
 """
