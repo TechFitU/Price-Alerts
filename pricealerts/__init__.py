@@ -18,8 +18,23 @@ def create_app(test_config=None):
     # Reset logging
     # (see http://www.caktusgroup.com/blog/2015/01/27/Django-Logging-Configuration-logging_config-default-settings-logger/)
 
-    logfile = os.path.join(LOGFILE_ROOT, 'project.log') if env('FLASK_ENV')=='production' \
-                else  os.path.join(LOGFILE_ROOT, 'project-dev.log')
+
+
+    # create and configure the app
+    app = Flask(__name__, instance_relative_config=True)
+
+
+
+    # ensure the instance folder exists with photos and logs folders inside
+    try:
+        os.makedirs(app.instance_path)
+        os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
+        os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
+    except OSError:
+        pass
+
+    logfile = os.path.join(LOGFILE_ROOT, 'project.log') if env('FLASK_ENV') == 'production' \
+        else os.path.join(LOGFILE_ROOT, 'project-dev.log')
 
     LOGGING = {
         'version': 1,
@@ -64,19 +79,6 @@ def create_app(test_config=None):
         }
     }
     dictConfig(LOGGING)
-
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-
-
-
-    # ensure the instance folder exists with photos and logs folders inside
-    try:
-        os.makedirs(app.instance_path, exist_ok=True)
-        os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
-        os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
-    except OSError:
-        pass
 
     # load the default settings instance config
     import pricealerts.settings
