@@ -7,7 +7,7 @@ from pricealerts.settings import env
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('interval', seconds=env('ALERT_CHECK_TIMEOUT',default=10))
+@sched.scheduled_job('interval', seconds=env('ALERT_CHECK_INTERVAL',default=10))
 def job():
     app = create_app()
     with app.app_context():

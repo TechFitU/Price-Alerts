@@ -134,7 +134,7 @@ class ItemModel(db.Model, BaseModel):
     name = db.Column(db.String(255), unique=True)
     price = db.Column(db.Float(precision=2), nullable=False, default=0.0)
     url = db.Column(db.String(255), nullable=True)
-
+    image = db.Column(db.String(255), nullable=True)
     alerts = db.relationship('AlertModel', backref=db.backref('item', lazy='joined'), lazy='dynamic',
                              cascade="all, delete, delete-orphan")
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
@@ -215,7 +215,7 @@ class AlertModel(db.Model, BaseModel):
     contact_phone = db.Column(db.String(30), nullable=True)
     contact_email = db.Column(db.String(80), nullable=False)
     check_every = db.Column(db.Integer, default=10, nullable=False)
-    last_checked = db.Column(db.DateTime(timezone=False), nullable=True)
+    last_checked = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
 
     def __str__(self):
         return "(AlertModel<id={}, user='{}', item='{}'>)".format(self.id, self.user.name, self.item.name)
@@ -279,14 +279,13 @@ class AlertModel(db.Model, BaseModel):
 
     # Class methods
     @classmethod
-    def find_needing_update(cls, minutes_since_last_update=env('ALERT_UPDATE_INTERVAL',default=10)):
-
-        last_update_limit = datetime.datetime.utcnow() - datetime.timedelta(minutes=minutes_since_last_update)
+    def find_needing_update(cls, minutes_since_last_update=env('ALERT_CHECK_INTERVAL',default=10)):
+        last_update_limit = datetime.datetime.utcnow() - datetime.timedelta(minutes=int(minutes_since_last_update))
         return cls.query.filter(AlertModel.active == True, AlertModel.last_checked <= last_update_limit).all()
 
     def load_price_change(self):
         try:
-            self.item.load_item_data()
+            self.item.name, self.item.price, self.item.image = self.item.load_item_data()
         except:
             pass
         self.last_checked = datetime.datetime.utcnow()

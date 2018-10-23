@@ -72,7 +72,7 @@ def create_app(test_config=None):
 
     # ensure the instance folder exists with photos and logs folders inside
     try:
-        os.makedirs(app.instance_path)
+        os.makedirs(app.instance_path, exist_ok=True)
         os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
         os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
     except OSError:
