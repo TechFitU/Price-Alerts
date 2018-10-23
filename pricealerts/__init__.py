@@ -185,7 +185,7 @@ def create_app(test_config=None):
             # Create initial data
             user = UserModel.find_by(username='alexmtnezf@gmail.com')
             if not user:
-                user = UserModel('Alex Martinez', 'alexmtnezf@gmail.com', '123456', is_admin=True, api_key=os.urandom(35))
+                user = UserModel('Alex Martinez', 'alexmtnezf@gmail.com', '123456', is_admin=True)
                 db.session.add(user)
                 db.session.commit()
 
@@ -197,7 +197,7 @@ def create_app(test_config=None):
             # Create initial data
             user = UserModel.find_by(username='alexmtnezf@gmail.com')
             if not user:
-                user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True, api_key=os.urandom(35))
+                user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True)
                 db.session.add(user)
                 db.session.commit()
 

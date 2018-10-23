@@ -2,6 +2,10 @@
 import logging
 import os
 import sys
+import smtplib
+
+from email.message import EmailMessage
+import email.utils
 import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -27,7 +31,7 @@ class NotificationDispatcher(object):
                    timeout=env('EMAIL_SEND_TIMEOUT', default=10)):
         """
         Send emails with Mailgun Rest API
-        If Mailgun fails, this method use SMTP server mg.techfitu.com for sending emails
+        If Mailgun fails, this method use SMTP server mail.techfitu.com for sending emails
         Docs: http://blog.tecladocode.com/learn-python-send-emails/
 
         """
@@ -40,25 +44,30 @@ class NotificationDispatcher(object):
                   "html": message,
                   "text": "Testing some Mailgun awesomness!"
                   })
+        # You can see a record of this email in your logs: https://app.mailgun.com/app/logs
         if response.status_code != 200:
+
+
+            msg = EmailMessage()
+            msg['From'] = "{} <{}>".format(env('BRAND_NAME') + " - " + env('PRODUCT_NAME'), env('EMAIL_FROM'))
+            msg['To'] = ','.join([to_email, "{} <{}>".format(user_name, user_email)])
+            msg['Subject'] = subject
+            msg['Date'] = email.utils.localtime()
+            msg.set_content(message)
+
+            username = env('SMTP_USER', default=None)
+            password = env('SMTP_PASS', default=None)
+            port = int(env('SMTP_PORT', default=None))
+            if not port:
+                port = smtplib.SMTP_PORT
+
             try:
-                import smtplib
-                from email.message import EmailMessage
-                import email.utils
+                if bool(env('SMTP_SSL', default=True)) == True:
+                    smtp = smtplib.SMTP_SSL(env('SMTP_SERVER'), port, timeout=int(timeout))
 
-                port = int(env('SMTP_PORT', default=None))
-                if not port:
-                    port = smtplib.SMTP_PORT
-                smtp = smtplib.SMTP(env('SMTP_SERVER'), port, timeout=int(timeout))
-                msg = EmailMessage()
-                msg['From'] = "{} <{}>".format(env('BRAND_NAME') + " - " + env('PRODUCT_NAME'), env('EMAIL_FROM'))
-                msg['To'] = ','.join([to_email, "{} <{}>".format(user_name, user_email)])
-                msg['Subject'] = subject
-                msg['Date'] = email.utils.localtime()
-                msg.set_content(message)
+                else:
+                    smtp = smtplib.SMTP(env('SMTP_SERVER'), port, timeout=int(timeout))
 
-                username = env('SMTP_USER', default=None)
-                password = env('SMTP_PASS', default=None)
                 if username:
                     if secure is not None:
                         smtp.ehlo()
@@ -67,13 +76,14 @@ class NotificationDispatcher(object):
                     smtp.login(username, password)
                 smtp.send_message(msg)
                 smtp.quit()
-            except Exception as ex:
+            except (smtplib.SMTPDataError, smtplib.SMTPServerDisconnected) as ex:
                 logging.getLogger('root').error('Error sending email to users using SMTP server.\n{}'.format(str(ex)))
-                raise
+                return False
+
 
 
         return True
-        #You can see a record of this email in your logs: https://app.mailgun.com/app/logs
+
 
     @classmethod
     def send_test_email(cls):

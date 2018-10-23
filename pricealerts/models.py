@@ -26,6 +26,7 @@ from pricealerts.common.base_model import BaseModel, DatabaseError
 from pricealerts.settings import env
 from pricealerts.utils import notifications
 from pricealerts.utils.helpers import parse_phone, is_valid_email
+from pricealerts.utils.notifications import NotificationDispatcher
 
 
 class ItemNotFoundError(Exception):
@@ -217,6 +218,7 @@ class AlertModel(db.Model, BaseModel):
     check_every = db.Column(db.Integer, default=10, nullable=False)
     last_checked = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
 
+
     def __str__(self):
         return "(AlertModel<id={}, user='{}', item='{}'>)".format(self.id, self.user.name, self.item.name)
 
@@ -232,6 +234,7 @@ class AlertModel(db.Model, BaseModel):
         self.contact_phone = contact_phone
         self.shared = shared
         self.active = active
+        self.last_checked_delay = None
 
     def json(self):
         return {
@@ -290,7 +293,10 @@ class AlertModel(db.Model, BaseModel):
             pass
         self.last_checked = datetime.datetime.utcnow()
 
-        self.save_to_db()
+        try:
+            self.save_to_db()
+        except:
+            pass
 
     def send_email_if_price_limit_reached(self):
         if self.item.price < self.price_limit:
@@ -304,7 +310,8 @@ class AlertModel(db.Model, BaseModel):
 
     def send_email_alert(self, subject, message):
 
-        notifications.NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
+
+        return NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
                                                             subject=subject, message=message)
 
 
@@ -399,7 +406,7 @@ class UserModel(db.Model, UserMixin, BaseModel):
     def __init__(self, name, username, password, api_key=None, phone=None, is_admin=False, is_staff=False, roles=None,
                  theme = None, last_login = None):
         self.username = username
-        self.api_key=api_key if api_key is not None else os.urandom(16)
+        self.api_key=api_key if api_key is not None else os.urandom(16).decode(encoding='utf-8')
         self.name = name
         self.password = generate_password_hash(password)  # Encrypt password before save it
         self.is_admin = is_admin
