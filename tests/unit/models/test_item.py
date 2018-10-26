@@ -32,3 +32,6 @@ class ItemTest(UnitBaseTest):
 
 if __name__ == '__main__':
     unittest.main()
+    import doctest
+
+    doctest.testmod()

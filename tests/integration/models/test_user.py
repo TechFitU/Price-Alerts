@@ -6,6 +6,7 @@ Class tested: StoreModel
 Only test methods that depends on databases or work with other classes and methods of your app
 """
 import os
+import unittest
 
 from mock import patch, Mock
 from sqlalchemy.exc import OperationalError
@@ -85,3 +86,9 @@ class UserTest(BaseTest):
                     UserModel.find_by_username('alexmtnezf@gmail.com')
                     mocked_filter_by.assert_called_with(username='alexmtnezf@gmail.com')
 
+
+if __name__ == '__main__':
+    unittest.main()
+    import doctest
+
+    doctest.testmod()

@@ -19,5 +19,9 @@ class StoreTest(UnitBaseTest):
         self.assertEqual('span', store.tag_name)
         self.assertEqual('{"id": "priceblock_ourprice"}', store.query_string)
 
+
 if __name__ == '__main__':
     unittest.main()
+    import doctest
+
+    doctest.testmod()

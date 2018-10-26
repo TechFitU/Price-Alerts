@@ -8,8 +8,8 @@ import datetime
 import os
 import re
 import uuid
-
-import pytz
+import random
+import string
 import requests
 import sqlalchemy
 from bs4 import BeautifulSoup, SoupStrainer
@@ -252,32 +252,18 @@ class AlertModel(db.Model, BaseModel):
             'contact_email': self.contact_email
         }
 
+    def send_email_alert(self, subject, message):
+        return notifications.NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
+                                                               subject, message)
+
     def send_sms_alert(self):
-        try:
-            notifications.NotificationDispatcher.send_sms(
+        return notifications.NotificationDispatcher.send_sms(
                 from_name="Pricing Alert Service",
                 to_phone=self.contact_phone,
                 to_name=self.user.name,
                 text='New Alert for {} and price {} was added.'.format(
                     self.item.name, self.item.price))
-        except TwilioRestException as ex:
-            print(ex.msg)
-            pass
 
-
-    def _send_simple_message(self):
-        """
-        Real call to send emails using my own domain
-        :return: HttpResponse object
-        """
-        return requests.post(
-            current_app.config['API_BASE_URL'],
-            auth=("api", current_app.config['API_KEY']),
-            data={"from": "Excited User <admin@techfitu.com>",
-                  "to": ["alexmtnezf@gmail.com", "admin@techfitu.com"],
-                  "subject": "Hello",
-                  "text": "Testing some Mailgun awesomness!"})
-        # You can see a record of this email in your logs: https://app.mailgun.com/app/logs
 
 
     # Class methods
@@ -300,19 +286,18 @@ class AlertModel(db.Model, BaseModel):
 
     def send_email_if_price_limit_reached(self):
         if self.item.price < self.price_limit:
-            self.send_email_alert(subject="NEW ALERT FOR PRICE DROP from TechFitU <{}>".format(env('SMTP_USER')),
-                                  message="!Congratulations {}, you have a chance to save money !<br/>"
-                                          "The product {} has dropped its price. "
-                                          "Got to the product <a href='{}'>link</a> to see its currrent status"
-                                          " You are a truly awesome prices hunter!".format(self.contact_email,
-                                                                                           self.item.name,
-                                                                                           self.item.url))
+            subject = "NEW ALERT FOR PRICE DROP from TechFitU <{}>".format(env('SMTP_USER')),
+            message = "!Congratulations {}, you have a chance to save money !<br/>"
+            "The product {} has dropped its price. "
+            "Got to the product <a href='{}'>link</a> to see its currrent status"
+            " You are a truly awesome prices hunter!".format(self.contact_email,
+                                                             self.item.name,
+                                                             self.item.url)
 
-    def send_email_alert(self, subject, message):
+            return NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
+                                              subject=subject, message=message)
 
-
-        return NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
-                                                            subject=subject, message=message)
+        return False
 
 
 
@@ -406,7 +391,9 @@ class UserModel(db.Model, UserMixin, BaseModel):
     def __init__(self, name, username, password, api_key=None, phone=None, is_admin=False, is_staff=False, roles=None,
                  theme = None, last_login = None):
         self.username = username
-        self.api_key=api_key if api_key is not None else os.urandom(16).decode(encoding='utf-8')
+
+        self.api_key="".join([random.SystemRandom().choice(string.digits + string.ascii_letters + string.punctuation) for i in
+                       range(100)]).replace("&", "*") if api_key is None else api_key
         self.name = name
         self.password = generate_password_hash(password)  # Encrypt password before save it
         self.is_admin = is_admin

@@ -5,6 +5,8 @@ Class tested: StoreModel
 
 Only test methods that depends on databases or work with other classes and methods of your app
 """
+import unittest
+
 from pricealerts import db
 from pricealerts.common.base_model import DatabaseError
 from pricealerts.models import StoreModel, ItemModel, ItemNotFoundError
@@ -122,3 +124,10 @@ class StoreTest(BaseTest):
             self.assertEqual(1, self.store.items.count())
             self.store.delete_item(1)
             self.assertEqual(0, self.store.items.count())
+
+
+if __name__ == '__main__':
+    unittest.main()
+    import doctest
+
+    doctest.testmod()

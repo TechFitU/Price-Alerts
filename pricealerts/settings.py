@@ -31,6 +31,7 @@ ALERT_UPDATE_TIMEOUT = env('ALERT_UPDATE_TIMEOUT', default=10) # in minutes
 ALERT_CHECK_INTERVAL = env('ALERT_CHECK_INTERVAL', default=30) # in seconds
 ADMINS_EMAIL = env('ADMINS_EMAIL').split(';')
 
+# MAILGUN EMAIL SETTINGS
 EMAILS_ALLOWED = ['gmail.com', 'yahoo.com', 'outlook.com']
 API_KEY = env('API_KEY')
 API_BASE_URL = env('API_BASE_URL')
@@ -41,3 +42,9 @@ SMTP_USER=env('SMTP_USER')
 SMTP_PASS=env('SMTP_PASS')
 EMAIL_FROM = env('EMAIL_FROM')
 EMAIL_SEND_TIMEOUT = int(env('EMAIL_SEND_TIMEOUT', default=10))
+
+# Twilio credentials for SMS
+ACCOUNT_SID=env('ACCOUNT_SID')
+AUTH_TOKEN=env('AUTH_TOKEN')
+FROM_PHONE=env('FROM_PHONE')
+EMERGENCY_CODE=env('EMERGENCY_CODE')

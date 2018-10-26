@@ -7,6 +7,7 @@ Only test methods that depends on databases or work with other classes and metho
 """
 import datetime
 import os
+import unittest
 
 from mock import patch, Mock
 from pricealerts import db
@@ -100,3 +101,10 @@ class AlertTest(BaseTest):
                 self.assertEqual(6.0, self.alert.item.price)
                 self.assertEqual(None, self.alert.item.image)
                 self.assertAlmostEqual(self.alert.last_checked,datetime.datetime.utcnow(), delta=datetime.timedelta(seconds=10))
+
+
+if __name__ == '__main__':
+    unittest.main()
+    import doctest
+
+    doctest.testmod()

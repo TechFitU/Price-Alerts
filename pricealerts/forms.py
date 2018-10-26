@@ -1,14 +1,24 @@
 import decimal
+import os
+from datetime import timedelta
 
 from flask import url_for
 from flask_wtf import FlaskForm
 from werkzeug.utils import redirect
 from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField, HiddenField)
+from wtforms.meta import DefaultMeta
 from wtforms.validators import (DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
     NumberRange)
 from pricealerts.models import UserModel
 from pricealerts.utils.helpers import parse_phone, is_safe_url, get_redirect_target
 from .widgets import MyTextInput, CustomPasswordInput
+
+class BindNameMeta(DefaultMeta):
+    def bind_field(self, form, unbound_field, options):
+        if 'custom_name' in unbound_field.kwargs:
+            options['name'] = unbound_field.kwargs.pop('custom_name')
+        return unbound_field.bind(form=form, **options)
+
 
 
 class RedirectForm(FlaskForm):
@@ -143,11 +153,14 @@ class AlertForm(FlaskForm):
                                                NumberRange(min=5, max=10,
                                                            message="This number must be between 5 and 10 minutes")])
 
-    alert_email = StringField('Contact Email', _name='alert_email',
+    alert_email = StringField('Contact Email',
                         validators=[DataRequired(), Email(), LengthValidator(min=6, max=35)], widget=MyTextInput(),
                               render_kw={'type':'email'})
 
-    alert_phone = StringField('Contact Phone', validators=[Optional(), phone_validator()], widget=MyTextInput())
+    alert_phone = StringField(label='Contact Phone', custom_name='phone[1][number]', validators=[Optional(), phone_validator()], widget=MyTextInput())
+
 
     active = BooleanField('Active', validators=[DataRequired()], default=True,
                           render_kw={'class':'form-check-input', 'id':'defaultCheck1'})
+
+    Meta = BindNameMeta

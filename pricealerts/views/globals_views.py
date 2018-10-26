@@ -27,7 +27,6 @@ def about():
 def json():
     return jsonify({'message': "Hello, World!"})
 
-
 # a simple page that says hello
 @global_bp.route('/hello')
 def hello():

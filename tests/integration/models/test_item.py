@@ -5,6 +5,7 @@ Class tested: StoreModel
 
 Only test methods that depends on databases or work with other classes and methods of your app
 """
+import unittest
 from unittest.mock import patch, Mock, MagicMock
 from pricealerts.models import ItemModel, StoreModel, ItemNotLoadedError
 
@@ -36,3 +37,9 @@ class ItemTest(BaseTest):
                 ('John Lewis & Partners Amber Clear Swirl Bauble, Orange at John Lewis & Partners', 6.00 ,None),
                               self.item.load_item_data())
 
+
+if __name__ == '__main__':
+    unittest.main()
+    import doctest
+
+    doctest.testmod()

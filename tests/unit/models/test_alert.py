@@ -29,5 +29,9 @@ class AlertTest(UnitBaseTest):
         self.assertEqual(10, self.alert.check_every)
         self.assertEqual(None, self.alert.last_checked)
 
+
 if __name__ == '__main__':
     unittest.main()
+    import doctest
+
+    doctest.testmod()

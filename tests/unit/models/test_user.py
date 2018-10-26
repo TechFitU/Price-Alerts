@@ -48,5 +48,8 @@ class UserTest(UnitBaseTest):
     def test_user_representation(self):
         self.assertEqual("User(id='None')", str(self.user))
 
+
 if __name__ == '__main__':
     unittest.main()
+    import doctest
+    doctest.testmod()
