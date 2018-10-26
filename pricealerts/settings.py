@@ -18,6 +18,9 @@ if os.path.exists(env_file):
 
 env = environ.Env()
 
+
+ENV = env('FLASK_ENV', default='production')
+DEBUG = env('FLASK_DEBUG', default=False)
 SECRET_KEY=os.urandom(16)
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024 # specify the maximum file size after which an upload is aborted
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'instance','photos')
