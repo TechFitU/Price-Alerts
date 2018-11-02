@@ -55,7 +55,7 @@
 
        <div class="panel-body">
 
-            <strong>API Key: </strong> {{ show_user.api_key }}<br/><br/>
+            <strong>API Key: <input type="text" class="form-control" disabled value="{{ show_user.api_key }}"/><br/><br/>
            <strong>Bio</strong>: {{ show_user.profile.bio }}
 	</div>
       </div>
