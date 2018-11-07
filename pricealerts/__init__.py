@@ -1,4 +1,6 @@
 import base64
+import logging
+from logging.config import dictConfig
 from logging.handlers import SMTPHandler
 
 from flask import Flask, render_template
@@ -6,32 +8,18 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.exceptions import BadRequest, NotFound
-from logging.config import dictConfig
-from pricealerts.settings import *
+
 from pricealerts.db import db
 from pricealerts.models import UserModel, ItemModel, StoreModel, AlertModel
-import logging
+from pricealerts.settings import *
+
 LOGGING_CONFIG = None
+
 
 def create_app(test_config=None):
     # Create logging config before Flask instance app is created
     # Reset logging
     # (see http://www.caktusgroup.com/blog/2015/01/27/Django-Logging-Configuration-logging_config-default-settings-logger/)
-
-
-
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-
-
-
-    # ensure the instance folder exists with photos and logs folders inside
-    try:
-        os.makedirs(app.instance_path)
-        os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
-        os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
-    except OSError:
-        pass
 
     logfile = os.path.join(LOGFILE_ROOT, 'project.log') if env('FLASK_ENV') == 'production' \
         else os.path.join(LOGFILE_ROOT, 'project-dev.log')
@@ -80,18 +68,31 @@ def create_app(test_config=None):
     }
     dictConfig(LOGGING)
 
+    # create and configure the app
+    app = Flask(__name__, instance_relative_config=True)
+
+    # ensure the instance folder exists with photos and logs folders inside
+    try:
+        os.makedirs(app.instance_path)
+        os.makedirs(os.path.join(app.instance_path, 'photos'), exist_ok=True)
+        os.makedirs(os.path.join(app.instance_path, 'logs'), exist_ok=True)
+    except OSError:
+        pass
+
+
+
     # load the default settings instance config
     import pricealerts.settings
     app.config.from_object(pricealerts.settings)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('development.py', silent=True)
+        app.config.from_pyfile('{}.py'.format(app.config['ENV']), silent=True)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    if env('FLASK_ENV')=='production':
+    if app.config['ENV'] == 'production':
         # Email Errors to Admins in production mode
 
         mail_handler = SMTPHandler(
@@ -156,6 +157,7 @@ def create_app(test_config=None):
     # To enable CSRF protection globally for a Flask app, register the CSRFProtect extension.
     csrf = CSRFProtect(app)
 
+
     @app.errorhandler(CSRFError)
     def errorHandler(reason):
         """
@@ -165,6 +167,7 @@ def create_app(test_config=None):
         :return: Template rendered with the reason
         """
         return render_template('error.html', code=400, reason=reason)
+
 
     @app.errorhandler(BadRequest)
     def handle_bad_request(e):
@@ -206,9 +209,16 @@ def create_app(test_config=None):
     from .views.users import user_blueprint
     from .views.alerts import alert_blueprint
     from .views.globals_views import global_bp
+    from .views.twilio_api import twilio_bp
 
     app.register_blueprint(user_blueprint)
     app.register_blueprint(alert_blueprint)
     app.register_blueprint(global_bp)
+    app.register_blueprint(twilio_bp)
+    csrf.exempt(twilio_bp)
 
     return app
+
+
+if __name__ == "__main__":
+    create_app().run()

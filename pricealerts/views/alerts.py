@@ -24,6 +24,7 @@ def create_alert():
 
     validate = form.validate_on_submit()  # This is a shortcut for form.is_submitted() and form.validate().
     if validate:
+
         # Request method is POST
         prod_url = form.url.data
         # store_id = int(request.form['store_id'])
@@ -31,6 +32,7 @@ def create_alert():
         check_frequency = int(form.data['check_frequency'])
         alert_email = form.data['alert_email']
         alert_phone = form.data['alert_phone']
+
         active = bool(form.data['active'])
 
         user = UserModel.find_one(username=current_user.username)
@@ -84,7 +86,12 @@ def create_alert():
 
 
         if alert.contact_phone is not None and alert.contact_phone != "":
-            if not alert.send_sms_alert():
+            if not NotificationDispatcher.send_sms(
+                    from_name="Pricing Alert Service",
+                    to_phone=alert.contact_phone,
+                    to_name=user.name,
+                    text='New Alert for {} and price limit {} was added.'.format(alert.item.name, alert.price_limit)):
+
                 flash('Error sending SMS to {}. A notification has been '
                       'emitted to the system administrator'.format(alert.contact_phone), category='error')
 
@@ -127,7 +134,12 @@ def edit_alert(alert_id):
                   'emitted to the system administrator'.format(alert.contact_emaiil), category='error')
 
         if alert.contact_phone is not None and alert.contact_phone != "":
-            if not alert.send_sms_alert():
+            if not NotificationDispatcher.send_sms(
+                    from_name="Pricing Alert Service",
+                    to_phone=alert.contact_phone,
+                    to_name=user.name,
+                    text='New Alert for {} and price limit {} was added.'.format(alert.item.name, alert.price_limit)):
+
                 flash('Error sending SMS to {}. A notification has been '
                       'emitted to the system administrator'.format(alert.contact_phone), category='error')
 

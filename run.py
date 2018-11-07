@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import argparse
+
 from pricealerts import create_app
 from pricealerts.db import db
 from pricealerts.models import UserModel
@@ -32,3 +34,10 @@ with application.app_context():
                 user = UserModel('Alex', 'alexmtnezf@gmail.com', '123456', is_admin=True)
                 db.session.add(user)
                 db.session.commit()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument("--host", default="127.0.0.1")
+    args = parser.parse_args()
+    application.run(port=args.port, host=args.host)

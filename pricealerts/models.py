@@ -6,10 +6,11 @@ Module that contains the model definition for every table in a SQLAlchemy databa
 """
 import datetime
 import os
-import re
-import uuid
 import random
+import re
 import string
+import uuid
+
 import requests
 import sqlalchemy
 from bs4 import BeautifulSoup, SoupStrainer
@@ -17,15 +18,13 @@ from flask import json
 from flask.globals import current_app
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound
-from twilio.base.exceptions import TwilioRestException
 from werkzeug.exceptions import NotFound
 
 from pricealerts import settings
-from pricealerts.db import db
 from pricealerts.common.base_model import BaseModel, DatabaseError
+from pricealerts.db import db
 from pricealerts.settings import env
-from pricealerts.utils import notifications
-from pricealerts.utils.helpers import parse_phone, is_valid_email
+from pricealerts.utils.helpers import parse_phone
 from pricealerts.utils.notifications import NotificationDispatcher
 
 
@@ -231,7 +230,8 @@ class AlertModel(db.Model, BaseModel):
         self.last_checked = last_checked
         self.check_every = check_every
         self.contact_email = contact_email if contact_email is not None else 'undefined'
-        self.contact_phone = contact_phone
+        self.contact_phone = "+1" + "".join(parse_phone(contact_phone)) if isinstance(contact_phone, str) and \
+                                                                           contact_phone != '' else None
         self.shared = shared
         self.active = active
         self.last_checked_delay = None
@@ -251,20 +251,6 @@ class AlertModel(db.Model, BaseModel):
             'contact_phone': self.contact_phone,
             'contact_email': self.contact_email
         }
-
-    def send_email_alert(self, subject, message):
-        return notifications.NotificationDispatcher.send_email(self.user.name, self.user.username, self.contact_email,
-                                                               subject, message)
-
-    def send_sms_alert(self):
-        return notifications.NotificationDispatcher.send_sms(
-                from_name="Pricing Alert Service",
-                to_phone=self.contact_phone,
-                to_name=self.user.name,
-                text='New Alert for {} and price {} was added.'.format(
-                    self.item.name, self.item.price))
-
-
 
     # Class methods
     @classmethod

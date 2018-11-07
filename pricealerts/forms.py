@@ -1,6 +1,4 @@
 import decimal
-import os
-from datetime import timedelta
 
 from flask import url_for
 from flask_wtf import FlaskForm
@@ -8,10 +6,12 @@ from werkzeug.utils import redirect
 from wtforms import (StringField, BooleanField, PasswordField, DecimalField, IntegerField, HiddenField)
 from wtforms.meta import DefaultMeta
 from wtforms.validators import (DataRequired, Length, InputRequired, Email, EqualTo, Optional, ValidationError, URL, \
-    NumberRange)
+                                NumberRange)
+
 from pricealerts.models import UserModel
 from pricealerts.utils.helpers import parse_phone, is_safe_url, get_redirect_target
 from .widgets import MyTextInput, CustomPasswordInput
+
 
 class BindNameMeta(DefaultMeta):
     def bind_field(self, form, unbound_field, options):
@@ -143,6 +143,7 @@ class RegistrationForm(FlaskForm):
 
 
 class AlertForm(FlaskForm):
+    Meta = BindNameMeta
     url = StringField('Product url', validators=[DataRequired(), URL()], widget=MyTextInput())
     price_limit = DecimalField('Price limit', places=2, rounding=decimal.ROUND_UP,
                                validators=[DataRequired(), NumberRange(2, 100000.00)], widget=MyTextInput())
@@ -163,4 +164,3 @@ class AlertForm(FlaskForm):
     active = BooleanField('Active', validators=[DataRequired()], default=True,
                           render_kw={'class':'form-check-input', 'id':'defaultCheck1'})
 
-    Meta = BindNameMeta
